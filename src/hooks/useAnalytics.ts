@@ -8,25 +8,82 @@ export interface AnalyticsData {
   successRate: number;
   interactionData: { name: string; interactions: number }[];
   responseTimeData: { name: string; responseTime: number }[];
+  recentInteractions: Array<{
+    id: string;
+    query: string;
+    response: string;
+    timestamp: Date;
+    responseTime: number;
+    successful: boolean;
+  }>;
 }
 
-export function useAnalytics(agents: Agent[]): AnalyticsData {
+export function useAnalytics(agent: Agent | null): AnalyticsData {
   return useMemo(() => {
-    const totalInteractions = agents.reduce((sum, agent) => sum + agent.analytics.interactions.length, 0);
-    const avgResponseTime = agents.reduce((sum, agent) => {
-      const interactions = agent.analytics.interactions;
-      return sum + (interactions.length > 0 ? interactions.reduce((s, i) => s + i.responseTime, 0) / interactions.length : 0);
-    }, 0) / agents.length || 0;
-    const successfulInteractions = agents.reduce((sum, agent) => sum + agent.analytics.interactions.filter(i => i.successful).length, 0);
-    const successRate = totalInteractions > 0 ? (successfulInteractions / totalInteractions) * 100 : 0;
-    const userSatisfaction = totalInteractions > 0 ? (successRate * 0.7) + ((1 - Math.min(avgResponseTime, 5) / 5) * 30) : 0;
+    if (!agent) {
+      return {
+        totalInteractions: 0,
+        avgResponseTime: 0,
+        userSatisfaction: 0,
+        successRate: 0,
+        interactionData: [],
+        responseTimeData: [],
+        recentInteractions: []
+      };
+    }
 
-    const interactionData = agents.map(agent => ({ name: agent.name, interactions: agent.analytics.interactions.length }));
-    const responseTimeData = agents.map(agent => ({
-      name: agent.name,
-      responseTime: agent.analytics.interactions.length > 0 ?
-        agent.analytics.interactions.reduce((sum, interaction) => sum + interaction.responseTime, 0) / agent.analytics.interactions.length : 0
-    }));
+    const interactions = agent.analytics.interactions;
+    const totalInteractions = interactions.length;
+    
+    const avgResponseTime = totalInteractions > 0
+      ? interactions.reduce((sum, i) => sum + i.responseTime, 0) / totalInteractions
+      : 0;
+
+    const successfulInteractions = interactions.filter(i => i.successful).length;
+    const successRate = totalInteractions > 0 
+      ? (successfulInteractions / totalInteractions) * 100 
+      : 0;
+
+    const userSatisfaction = totalInteractions > 0 
+      ? (successRate * 0.7) + ((1 - Math.min(avgResponseTime, 5) / 5) * 30) 
+      : 0;
+
+    // Get last 30 days of data for charts
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentInteractions = interactions
+      .filter(i => i.timestamp > thirtyDaysAgo)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 10);
+
+    // Group interactions by day for charts
+    const dailyInteractions = interactions.reduce((acc, interaction) => {
+      const date = new Date(interaction.timestamp).toLocaleDateString();
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const dailyResponseTimes = interactions.reduce((acc, interaction) => {
+      const date = new Date(interaction.timestamp).toLocaleDateString();
+      if (!acc[date]) {
+        acc[date] = { total: 0, count: 0 };
+      }
+      acc[date].total += interaction.responseTime;
+      acc[date].count += 1;
+      return acc;
+    }, {} as Record<string, { total: number; count: number }>);
+
+    const interactionData = Object.entries(dailyInteractions)
+      .map(([name, interactions]) => ({ name, interactions }))
+      .slice(-7);
+
+    const responseTimeData = Object.entries(dailyResponseTimes)
+      .map(([name, data]) => ({ 
+        name, 
+        responseTime: data.total / data.count 
+      }))
+      .slice(-7);
 
     return {
       totalInteractions,
@@ -34,7 +91,8 @@ export function useAnalytics(agents: Agent[]): AnalyticsData {
       userSatisfaction,
       successRate,
       interactionData,
-      responseTimeData
+      responseTimeData,
+      recentInteractions
     };
-  }, [agents]);
+  }, [agent]);
 }

@@ -3,10 +3,17 @@ import { useAgentStore } from '../../store/agentStore';
 import { Bot, Trash2 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { cn } from '../../utils/cn';
+import { useNavigate } from 'react-router-dom';
 
 export function AgentsList() {
   const { agents, selectedAgent, selectAgent, deleteAgent } = useAgentStore();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleAgentClick = (agentId: string) => {
+    selectAgent(agentId);
+    navigate(`/agent/${agentId}`);
+  };
 
   const handleDelete = async (e: React.MouseEvent, agentId: string) => {
     e.stopPropagation();
@@ -42,7 +49,7 @@ export function AgentsList() {
         {agents.map((agent) => (
           <div
             key={agent.id}
-            onClick={() => selectAgent(agent.id)}
+            onClick={() => handleAgentClick(agent.id)}
             className={cn(
               "group w-full flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer",
               selectedAgent?.id === agent.id ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'

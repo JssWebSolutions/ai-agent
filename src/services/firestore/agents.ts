@@ -18,6 +18,11 @@ import { COLLECTIONS } from '../database/collections';
 import { agentConverter } from './converters';
 import { updateUserAgentCount } from '../auth/userService';
 
+/**
+ * Fetches all agents for a specific user. If no agents exist, it creates a default agent.
+ * @param userId - The ID of the user.
+ * @returns A promise resolving to an array of agents.
+ */
 export async function getUserAgents(userId: string): Promise<Agent[]> {
   try {
     const agentsRef = collection(db, COLLECTIONS.AGENTS).withConverter(agentConverter);
@@ -41,6 +46,11 @@ export async function getUserAgents(userId: string): Promise<Agent[]> {
   }
 }
 
+/**
+ * Creates a new agent document in Firestore.
+ * @param agent - The agent data to create.
+ * @returns A promise resolving to the new agent's ID.
+ */
 export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
   try {
     const agentsRef = collection(db, COLLECTIONS.AGENTS).withConverter(agentConverter);
@@ -60,6 +70,10 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
   }
 }
 
+/**
+ * Updates an existing agent document in Firestore.
+ * @param agent - The updated agent data.
+ */
 export async function updateAgent(agent: Agent): Promise<void> {
   try {
     const agentRef = doc(db, COLLECTIONS.AGENTS, agent.id).withConverter(agentConverter);
@@ -91,6 +105,10 @@ export async function updateAgent(agent: Agent): Promise<void> {
   }
 }
 
+/**
+ * Deletes an agent document from Firestore.
+ * @param agentId - The ID of the agent to delete.
+ */
 export async function deleteAgent(agentId: string): Promise<void> {
   try {
     const agentRef = doc(db, COLLECTIONS.AGENTS, agentId);
@@ -112,6 +130,11 @@ export async function deleteAgent(agentId: string): Promise<void> {
   }
 }
 
+/**
+ * Adds an interaction to an agent's analytics.
+ * @param agentId - The ID of the agent.
+ * @param interaction - The interaction details.
+ */
 export async function addInteraction(
   agentId: string, 
   interaction: { 
@@ -139,7 +162,12 @@ export async function addInteraction(
   }
 }
 
-function getDefaultAgent(userId: string): Omit<Agent, 'id'> {
+/**
+ * Returns the default agent configuration for a user.
+ * @param userId - The ID of the user.
+ * @returns The default agent configuration.
+ */
+export function getDefaultAgent(userId: string): Omit<Agent, 'id'> {
   return {
     userId,
     name: 'AI Assistant',

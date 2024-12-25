@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Agent } from '../types/agent';
+import defaultAgent from '../components/Agent/DefaultAgent';
 import * as FirestoreService from '../services/firestore/agents';
 
 interface AgentStore {
@@ -17,44 +18,6 @@ interface AgentStore {
   removeTrainingExample: (agentId: string, index: number) => Promise<void>;
   addInteraction: (agentId: string, interaction: { query: string; response: string; responseTime: number; successful: boolean }) => Promise<void>;
 }
-
-const defaultAgent: Omit<Agent, 'id' | 'userId'> = {
-  name: 'AI Assistant',
-  language: 'en',
-  firstMessage: 'Hello! I am your AI assistant. How can I help you today?',
-  systemPrompt: 'You are a helpful and friendly AI assistant. Always maintain your assigned identity and characteristics.',
-  voiceSettings: {
-    gender: 'female',
-    pitch: 0,
-    speed: 1,
-    accent: 'neutral'
-  },
-  responseStyle: 'conversational',
-  interactionMode: 'informative',
-  behaviorRules: [
-    'Always be helpful and friendly',
-    'Maintain your assigned identity',
-    'Use appropriate language and tone',
-    'Be concise but informative'
-  ],
-  apiKeys: {
-    openai: '',
-    gemini: ''
-  },
-  llmProvider: 'openai',
-  model: 'gpt-3.5-turbo',
-  widgetSettings: {
-    theme: 'light',
-    position: 'bottom-right',
-    buttonSize: 'medium',
-    borderRadius: 'medium',
-    showAgentImage: true
-  },
-  trainingExamples: [],
-  analytics: {
-    interactions: []
-  }
-};
 
 export const useAgentStore = create<AgentStore>((set, get) => ({
   agents: [],
@@ -80,6 +43,13 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       });
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  selectAgent: (agentId: string) => {
+    const agent = get().agents.find(a => a.id === agentId);
+    if (agent) {
+      set({ selectedAgent: agent });
     }
   },
 
@@ -115,20 +85,11 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
-  selectAgent: (agentId) => {
-    set(state => ({
-      selectedAgent: state.agents.find(a => a.id === agentId) || null
-    }));
-  },
-
+  
   createNewAgent: async (userId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const agentData = {
-        ...defaultAgent,
-        userId
-      };
+      const agentData = { ...defaultAgent, userId };
       const id = await FirestoreService.createAgent(agentData);
       const newAgent = { ...agentData, id };
       set(state => ({

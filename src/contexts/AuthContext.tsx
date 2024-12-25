@@ -10,10 +10,12 @@ import {
 } from '../services/auth/authService';
 import { updateUserDocument, getUserDocument } from '../services/auth/userService';
 import { useToast } from './ToastContext';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isAuthenticated: boolean;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -28,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -57,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = {
     user,
     loading,
+    isAuthenticated: !!user,
     signUp: async (email, password, name) => {
       try {
         const newUser = await signUpWithEmail(email, password, name);
@@ -66,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: 'Account created! Please check your email for verification.',
           type: 'success'
         });
+        navigate('/');
       } catch (error: any) {
         toast({
           title: 'Error',
@@ -84,6 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: 'Successfully signed in',
           type: 'success'
         });
+        navigate('/');
       } catch (error: any) {
         toast({
           title: 'Error',
@@ -102,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: 'Successfully signed out',
           type: 'success'
         });
+        navigate('/auth');
       } catch (error: any) {
         toast({
           title: 'Error',
