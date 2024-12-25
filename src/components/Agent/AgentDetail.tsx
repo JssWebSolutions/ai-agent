@@ -9,7 +9,7 @@ import { WidgetConfigurator } from '../Widget/WidgetConfigurator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
 import { cn } from '../../utils/cn';
 import { AgentsList } from '../Agents/AgentsList';
-import { Settings, BookOpen, BarChart2, Code } from 'lucide-react';
+import { Settings, BookOpen, BarChart2, Code, Bot } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export function AgentDetail() {
@@ -79,8 +79,12 @@ export function AgentDetail() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex gap-2 p-1 mb-6">
             <TabsTrigger value="agent" className={cn("tab-trigger", activeTab === 'agent' ? 'data-[state=active]' : '')}>
-              <Settings className="w-4 h-4" />
+              <Bot className="w-4 h-4" />
               Agent
+            </TabsTrigger>
+            <TabsTrigger value="settings" className={cn("tab-trigger", activeTab === 'settings' ? 'data-[state=active]' : '')}>
+              <Settings className="w-4 h-4" />
+              Settings
             </TabsTrigger>
             <TabsTrigger value="training" className={cn("tab-trigger", activeTab === 'training' ? 'data-[state=active]' : '')}>
               <BookOpen className="w-4 h-4" />
@@ -98,6 +102,9 @@ export function AgentDetail() {
 
           <TabsContent value="agent">
             <AgentTab />
+          </TabsContent>
+          <TabsContent value="settings">
+            <SettingsTab />
           </TabsContent>
           <TabsContent value="training">
             <TrainingTab />
