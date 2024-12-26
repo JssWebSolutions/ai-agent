@@ -9,6 +9,8 @@ import { UserDashboard } from './components/Dashboard/UserDashboard';
 import { AgentDetail } from './components/Agent/AgentDetail';
 import { AgentList } from './components/Agents/AgentList';
 import { SubscriptionPage } from './components/Subscription/SubscriptionPage';
+import { LandingPage } from './components/Landing/LandingPage';
+import { PlanSelector } from './components/Subscription/Plans/PlanSelector';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -37,6 +39,13 @@ export default function App() {
 
   return (
     <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/plans" element={<PlanSelector />} />
+      <Route path="/subscription" element={<SubscriptionPage />} />
+      <Route path="/auth" element={<AuthForm mode={authMode} onToggleMode={handleToggleAuthMode} />} />
+
+      {/* Authenticated Routes */}
       <Route
         path="/"
         element={
@@ -46,10 +55,6 @@ export default function App() {
             </MainLayout>
           </PrivateRoute>
         }
-      />
-      <Route
-        path="/auth"
-        element={<AuthForm mode={authMode} onToggleMode={handleToggleAuthMode} />}
       />
       <Route
         path="/agent"
@@ -67,16 +72,6 @@ export default function App() {
           <PrivateRoute>
             <MainLayout>
               <AgentDetail />
-            </MainLayout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/subscription"
-        element={
-          <PrivateRoute>
-            <MainLayout>
-              <SubscriptionPage />
             </MainLayout>
           </PrivateRoute>
         }
@@ -101,6 +96,8 @@ export default function App() {
           </PrivateRoute>
         }
       />
+
+      {/* Redirect all other routes to the homepage */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
