@@ -12,8 +12,6 @@ export class Widget extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    
-    // Get configuration from the global object
     this.config = (window as any).voiceAIConfig || {};
     this.client = new WidgetApiClient(this.config);
   }
@@ -41,11 +39,6 @@ export class Widget extends HTMLElement {
             --primary-color: ${this.config.theme === 'custom' ? this.config.customColors?.primary : '#3B82F6'};
             --text-color: ${this.config.theme === 'custom' ? this.config.customColors?.text : '#1F2937'};
             --bg-color: ${this.config.theme === 'custom' ? this.config.customColors?.background : '#FFFFFF'};
-            --border-color: #E5E7EB;
-            --bubble-bg: #F3F4F6;
-            --timestamp-color: #6B7280;
-            --icon-color: #6B7280;
-            --error-color: #EF4444;
             
             position: fixed;
             ${this.config.position}: 20px;
@@ -56,7 +49,7 @@ export class Widget extends HTMLElement {
             max-height: 600px;
             background: var(--bg-color);
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             display: ${this.isOpen ? 'flex' : 'none'};
             flex-direction: column;
           }
@@ -104,11 +97,7 @@ export class Widget extends HTMLElement {
           <chat-input></chat-input>
         </div>
         
-        <button class="toggle-button" id="toggle">
-          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-          </svg>
-        </button>
+        <button class="toggle-button" id="toggle">💬</button>
       `;
     }
   }
@@ -126,27 +115,21 @@ export class Widget extends HTMLElement {
       await this.handleMessage(e.detail.text);
     });
 
-    chatInput?.addEventListener('startSpeech', () => {
-      this.startSpeechRecognition();
-    });
-
-    chatInput?.addEventListener('stopSpeech', () => {
-      this.stopSpeechRecognition();
-    });
+    chatInput?.addEventListener('startSpeech', () => this.startSpeechRecognition());
+    chatInput?.addEventListener('stopSpeech', () => this.stopSpeechRecognition());
   }
 
   private async handleMessage(text: string) {
     this.addMessage(text, 'user');
-
     try {
       const { response } = await this.client.sendMessage(text);
-      this.addMessage(response, 'agent');
+      this.addMessage(response, 'bot');
     } catch (error) {
-      this.addMessage('Sorry, I encountered an error. Please try again.', 'agent');
+      this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
     }
   }
 
-  private addMessage(text: string, sender: 'user' | 'agent') {
+  private addMessage(text: string, sender: 'user' | 'bot') {
     const messagesContainer = this.shadowRoot?.querySelector('#messages');
     if (messagesContainer) {
       const bubble = document.createElement('chat-bubble');
@@ -163,7 +146,6 @@ export class Widget extends HTMLElement {
       this.recognition = new (window as any).webkitSpeechRecognition();
       this.recognition.continuous = false;
       this.recognition.interimResults = false;
-      this.recognition.lang = 'en-US';
 
       this.recognition.onresult = (event: any) => {
         const text = event.results[0][0].transcript;

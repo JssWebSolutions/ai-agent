@@ -14,6 +14,9 @@ export function WidgetConfigurator() {
 
   if (!selectedAgent) return null;
 
+  // Dynamically construct the script src URL
+  const scriptSrc = `${import.meta.env.REACT_APP_API_BASE_URL}/widget.js`;
+
   const widgetCode = `<!-- AI Agent Widget -->
 <div id="ai-agent-widget"></div>
 <script>
@@ -28,7 +31,7 @@ export function WidgetConfigurator() {
     customColors: ${JSON.stringify(selectedAgent.widgetSettings.customColors, null, 2)},` : ''}
   };
 </script>
-<script src="https://wondrous-melba-0abe63.netlify.app/widget.js" async defer></script>`;
+<script src="${scriptSrc}" async defer></script>`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(widgetCode);

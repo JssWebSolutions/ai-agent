@@ -1,7 +1,10 @@
-For all designs I ask you to make, have them be beautiful, not cookie cutter. Make webpages that are fully featured and worthy for production.
+Design a visually appealing, production-ready webpage using React, JSX, Tailwind CSS, and Lucide React icons. The webpage should feature a clean, modern, and unique design that avoids generic templates or stock designs. The design should be intuitive and optimized for a good user experience across both desktop and mobile devices. You must incorporate the following:
 
-By default, this template supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc unless absolutely necessary or I request them.
-
-Use icons from lucide-react for logos.
-
-Use stock photos from unsplash where appropriate, only valid URLs you know exist. Do not download the images, only link to them in image tags.
+React and JSX for component-based architecture.
+Tailwind CSS for styling with responsive layouts.
+Lucide React icons for logos, navigation elements, or other UI elements. Avoid using other icon libraries unless explicitly requested.
+Utilize Unsplash stock photos (provide valid URLs directly in the code) to populate image sections. Ensure the photos are appropriate for a website's visual aesthetic.
+The webpage should be well-structured, and all CSS styles must be handled via Tailwind CSS classes. Avoid adding extra custom CSS.
+Ensure the code is production-ready with proper folder structures, clear component separation, and good coding practices.
+The webpage should include a basic navigation bar, a hero section with a background image, a few content sections, and a footer.
+Important: Provide all the code as file edits. Do not add unnecessary symbols or textual descriptions outside the code. Only comments should be used when necessary to explain specific sections or parts of the code.
