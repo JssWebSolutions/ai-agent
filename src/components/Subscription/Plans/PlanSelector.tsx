@@ -1,35 +1,16 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { PlanCard } from './PlanCard';
 import { Plan } from '../../../types/subscription';
 import { PLANS } from '../../../services/subscription/plans';
-import { useAuth } from '../../../contexts/AuthContext';
-import { useToast } from '../../../contexts/ToastContext';
 
-export function PlanSelector() {
+interface PlanSelectorProps {
+  currentPlan?: Plan;
+  onSelectPlan: (plan: Plan) => void;
+}
+
+export function PlanSelector({ currentPlan, onSelectPlan }: PlanSelectorProps) {
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('monthly');
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
   const plans = Object.values(PLANS);
-
-  const handleSelectPlan = async (plan: Plan) => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    try {
-      // Navigate to subscription page with selected plan
-      navigate('/subscription', { state: { selectedPlan: plan, billingInterval } });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to select plan',
-        type: 'error'
-      });
-    }
-  };
 
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8">
@@ -71,8 +52,8 @@ export function PlanSelector() {
             key={plan.id}
             plan={plan}
             isPopular={plan.tier === 'pro'}
-            isCurrentPlan={false}
-            onSelect={handleSelectPlan}
+            isCurrentPlan={currentPlan?.id === plan.id}
+            onSelect={onSelectPlan}
             billingInterval={billingInterval}
           />
         ))}
