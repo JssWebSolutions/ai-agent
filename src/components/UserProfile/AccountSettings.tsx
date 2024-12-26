@@ -11,7 +11,7 @@ export function AccountSettings() {
 
   // Add this at the top of the component
   const handleBackToDashboard = () => {
-    navigate('/');
+    navigate('/user');
   };
 
   return (

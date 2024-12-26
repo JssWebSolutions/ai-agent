@@ -47,7 +47,7 @@ export default function App() {
 
       {/* Authenticated Routes */}
       <Route
-        path="/"
+        path="/user"
         element={
           <PrivateRoute>
             <MainLayout>

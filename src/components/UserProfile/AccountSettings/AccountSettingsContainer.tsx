@@ -12,7 +12,7 @@ export function AccountSettingsContainer() {
     <div className="max-w-2xl mx-auto space-y-8">
       <div className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/user')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-5 h-5" />
