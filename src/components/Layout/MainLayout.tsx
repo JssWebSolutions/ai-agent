@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmailVerificationBanner } from '../EmailVerificationBanner';
 import { UserMenu } from '../UserProfile/UserMenu';
 import { Menu, Home, Users, Settings, CreditCard, X } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,18 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated && !user) {
+      navigate('/auth');
+    }
+  }, [isAuthenticated, user, navigate]);
+
+  if (!isAuthenticated || !user) {
+    return null;
+  }
 
   const menuItems = [
     { icon: Home, label: 'Home', path: '/' },
