@@ -8,6 +8,7 @@ import { MainLayout } from './components/Layout/MainLayout';
 import { UserDashboard } from './components/Dashboard/UserDashboard';
 import { AgentDetail } from './components/Agent/AgentDetail';
 import { AgentList } from './components/Agents/AgentList';
+import { SubscriptionPage } from './components/Subscription/SubscriptionPage';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -66,6 +67,16 @@ export default function App() {
           <PrivateRoute>
             <MainLayout>
               <AgentDetail />
+            </MainLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/subscription"
+        element={
+          <PrivateRoute>
+            <MainLayout>
+              <SubscriptionPage />
             </MainLayout>
           </PrivateRoute>
         }
