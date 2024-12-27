@@ -151,32 +151,35 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await FirestoreService.addInteraction(agentId, interaction);
-      const agent = get().agents.find(a => a.id === agentId);
-      if (agent) {
-        const updatedAgent = {
-          ...agent,
-          analytics: {
-            ...agent.analytics,
-            interactions: [
-              {
-                id: `interaction-${Date.now()}`,
-                ...interaction,
-                timestamp: new Date()
-              },
-              ...agent.analytics.interactions
-            ]
-          }
+  
+      set(state => {
+        const updatedAgents = state.agents.map(agent =>
+          agent.id === agentId
+            ? {
+                ...agent,
+                analytics: {
+                  ...agent.analytics,
+                  interactions: [
+                    { id: `interaction-${Date.now()}`, ...interaction, timestamp: new Date() },
+                    ...(agent.analytics.interactions || []),
+                  ],
+                },
+              }
+            : agent
+        );
+  
+        return {
+          agents: updatedAgents,
+          selectedAgent: state.selectedAgent?.id === agentId ? updatedAgents.find(a => a.id === agentId) : state.selectedAgent,
         };
-        set(state => ({
-          agents: state.agents.map(a => a.id === agentId ? updatedAgent : a),
-          selectedAgent: state.selectedAgent?.id === agentId ? updatedAgent : state.selectedAgent,
-          error: null
-        }));
-      }
+      });
     } catch (error: any) {
       set({ error: error.message || 'Failed to add interaction' });
     } finally {
       set({ isLoading: false });
     }
   }
+  
+
+
 }));
