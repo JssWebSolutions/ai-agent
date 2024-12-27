@@ -1,18 +1,33 @@
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  User as FirebaseUser,
   updateProfile
 } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { createUserDocument, getUserDocument } from './userService';
 import { User } from '../../types/auth';
-import { AUTH_CONFIG } from '../../config/auth';
-import { AuthError } from './errors';
+import { validateEmail, validatePassword, validateName } from './validation';
+import { AuthError, handleAuthError } from './errors';
 import { sendVerificationEmail } from './emailVerification';
 import { sendPasswordReset } from './passwordReset';
 
 export async function signUpWithEmail(email: string, password: string, name: string): Promise<User> {
+  // Validate inputs
+  const emailValidation = validateEmail(email);
+  if (!emailValidation.success) {
+    throw new AuthError(emailValidation.error!, 'validation/invalid-email', 'email');
+  }
+
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.success) {
+    throw new AuthError(passwordValidation.error!, 'validation/invalid-password', 'password');
+  }
+
+  const nameValidation = validateName(name);
+  if (!nameValidation.success) {
+    throw new AuthError(nameValidation.error!, 'validation/invalid-name', 'name');
+  }
+
   try {
     const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(firebaseUser, { displayName: name });
@@ -31,32 +46,47 @@ export async function signUpWithEmail(email: string, password: string, name: str
     await sendVerificationEmail(firebaseUser);
 
     return { ...userData, id: firebaseUser.uid };
-  } catch (error: any) {
-    if (error.code === 'auth/email-already-in-use') {
-      throw new AuthError(AUTH_CONFIG.ERROR_MESSAGES.EMAIL_IN_USE, error.code);
-    }
-    throw new AuthError(error.message || AUTH_CONFIG.ERROR_MESSAGES.DEFAULT, error.code || 'auth/unknown');
+  } catch (error) {
+    throw handleAuthError(error);
   }
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<User> {
+  // Validate email
+  const emailValidation = validateEmail(email);
+  if (!emailValidation.success) {
+    throw new AuthError(emailValidation.error!, 'validation/invalid-email', 'email');
+  }
+
   try {
     const { user: firebaseUser } = await signInWithEmailAndPassword(auth, email, password);
     const userData = await getUserDocument(firebaseUser.uid);
     
     if (!userData) {
-      throw new AuthError(AUTH_CONFIG.ERROR_MESSAGES.USER_NOT_FOUND, 'auth/user-not-found');
+      // Create user document if it doesn't exist (for migrated users)
+      const newUserData: Omit<User, 'id'> = {
+        email: firebaseUser.email!,
+        name: firebaseUser.displayName || 'User',
+        role: 'user',
+        createdAt: new Date(),
+        agentCount: 0,
+        lastLogin: new Date(),
+        emailVerified: firebaseUser.emailVerified
+      };
+      await createUserDocument(firebaseUser.uid, newUserData);
+      return { ...newUserData, id: firebaseUser.uid };
     }
 
-    return {
+    // Update last login
+    const updatedUserData = {
       ...userData,
-      emailVerified: firebaseUser.emailVerified
+      emailVerified: firebaseUser.emailVerified,
+      lastLogin: new Date()
     };
-  } catch (error: any) {
-    if (error.code === 'auth/invalid-credential') {
-      throw new AuthError(AUTH_CONFIG.ERROR_MESSAGES.INVALID_CREDENTIALS, error.code);
-    }
-    throw new AuthError(error.message || AUTH_CONFIG.ERROR_MESSAGES.DEFAULT, error.code || 'auth/unknown');
+
+    return updatedUserData;
+  } catch (error) {
+    throw handleAuthError(error);
   }
 }
 
