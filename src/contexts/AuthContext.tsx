@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: 'Account created! Please check your email for verification.',
           type: 'success'
         });
-        navigate('/');
+        navigate('/user');
       } catch (error: any) {
         toast({
           title: 'Error',
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: 'Successfully signed in',
           type: 'success'
         });
-        navigate('/');
+        navigate('/user');
       } catch (error: any) {
         toast({
           title: 'Error',

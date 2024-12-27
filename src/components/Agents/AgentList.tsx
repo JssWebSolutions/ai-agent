@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Agent } from '../../types/agent';
-import { Bot } from 'lucide-react';
+import { Bot, Trash2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAgentStore } from '../../store/agentStore';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext'; // Import Toast context
+
 
 interface AgentListProps {
   agents?: Agent[];
@@ -13,7 +15,8 @@ interface AgentListProps {
 export function AgentList({ agents: propAgents }: AgentListProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { agents: storeAgents, loadAgents } = useAgentStore();
+  const { agents: storeAgents, loadAgents, deleteAgent } = useAgentStore();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(true);
 
   // Use either provided agents or agents from store
@@ -22,7 +25,7 @@ export function AgentList({ agents: propAgents }: AgentListProps) {
   useEffect(() => {
     const fetchAgents = async () => {
       if (!user?.id) return;
-      
+
       setIsLoading(true);
       try {
         await loadAgents(user.id);
@@ -42,6 +45,29 @@ export function AgentList({ agents: propAgents }: AgentListProps) {
 
   const handleAgentClick = (agentId: string) => {
     navigate(`/agent/${agentId}`);
+  };
+
+  const handleDelete = async (e: React.MouseEvent, agentId: string) => {
+    e.stopPropagation(); // Prevent navigation to agent details
+    const confirmDelete = window.confirm('Are you sure you want to delete this agent?');
+    if (!confirmDelete) return;
+
+    try {
+      await deleteAgent(agentId);
+      toast({
+        title: 'Success',
+        description: 'Agent deleted successfully',
+        type: 'success'
+      });
+      // Redirect to home or agent list after deletion
+      navigate('/agent');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete agent',
+        type: 'error'
+      });
+    }
   };
 
   if (isLoading) {
@@ -68,7 +94,8 @@ export function AgentList({ agents: propAgents }: AgentListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
       {agents.map((agent) => (
         <div
           key={agent.id}
@@ -91,8 +118,20 @@ export function AgentList({ agents: propAgents }: AgentListProps) {
               {agent.llmProvider} - {agent.language}
             </p>
           </div>
+
+          {/* Delete button */}
+          <button
+            onClick={(e) => handleDelete(e, agent.id)}
+            className="opacity-0 group-hover:opacity-100 hover:text-red-600 p-1 transition-opacity items-right"
+            aria-label="Delete agent"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       ))}
     </div>
+
+
+
   );
 }
