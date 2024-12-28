@@ -4,18 +4,18 @@ import { PlanCard } from './PlanCard';
 import { Plan } from '../../../types/subscription';
 import { PLANS } from '../../../services/subscription/plans';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useToast } from '../../../contexts/ToastContext';
+import { SubscriptionManager } from '../SubscriptionManager';
 
 export function PlanSelector() {
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('monthly');
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const plans = Object.values(PLANS);
 
   const handleSelectPlan = (plan: Plan) => {
     if (!user) {
-      // Redirect to auth if not logged in
       navigate('/auth', { 
         state: { 
           returnTo: '/subscription',
@@ -26,13 +26,13 @@ export function PlanSelector() {
       return;
     }
 
-    // Navigate to subscription page with selected plan
-    navigate('/subscription', { 
-      state: { 
-        selectedPlan: plan,
-        billingInterval 
-      }
-    });
+    setSelectedPlan(plan);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleSuccess = () => {
+    setIsPaymentModalOpen(false);
+    navigate('/user');
   };
 
   return (
@@ -75,12 +75,19 @@ export function PlanSelector() {
             key={plan.id}
             plan={plan}
             isPopular={plan.tier === 'pro'}
-            isCurrentPlan={false}
+            isCurrentPlan={user?.subscription?.planId === plan.id}
             onSelect={handleSelectPlan}
             billingInterval={billingInterval}
           />
         ))}
       </div>
+
+      <SubscriptionManager
+        selectedPlan={selectedPlan}
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onSuccess={handleSuccess}
+      />
     </div>
   );
 }

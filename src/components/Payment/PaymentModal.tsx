@@ -24,7 +24,7 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
     if (isOpen) {
       initializePayment();
     }
-  }, [isOpen]);
+  }, [isOpen, plan]);
 
   const initializePayment = async () => {
     try {
@@ -33,7 +33,7 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'Failed to initialize payment',
         type: 'error'
       });
       onClose();
