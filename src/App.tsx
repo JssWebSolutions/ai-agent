@@ -9,7 +9,7 @@ import { UserDashboard } from './components/Dashboard/UserDashboard';
 import { AgentDetail } from './components/Agent/AgentDetail';
 import { AgentList } from './components/Agents/AgentList';
 import { SubscriptionPage } from './components/Subscription/SubscriptionPage';
-import { LandingPage } from './components/Landing/LandingPage';
+import { ModernLandingPage } from './components/Landing/ModernLandingPage';
 import { PlanSelector } from './components/Subscription/Plans/PlanSelector';
 
 interface PrivateRouteProps {
@@ -40,7 +40,7 @@ export default function App() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<ModernLandingPage />} />
       <Route path="/plans" element={<PlanSelector />} />
       <Route path="/subscription" element={<SubscriptionPage />} />
       <Route path="/auth" element={<AuthForm mode={authMode} onToggleMode={handleToggleAuthMode} />} />

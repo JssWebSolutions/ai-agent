@@ -12,6 +12,10 @@ export async function createPaymentIntent(plan: Plan): Promise<string> {
       body: JSON.stringify({ planId: plan.id, amount: plan.price.monthly })
     });
     
+    if (!response.ok) {
+      throw new Error('Failed to create payment intent');
+    }
+    
     const { clientSecret } = await response.json();
     return clientSecret;
   } catch (error) {
