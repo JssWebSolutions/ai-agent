@@ -8,18 +8,22 @@ import { Plan, Usage } from '../../types/subscription';
 import { PLANS } from '../../services/subscription/plans';
 import { getUsageStats } from '../../services/subscription/usage';
 import { useToast } from '../../contexts/ToastContext';
+import { usePayment } from '../../hooks/usePayment';
+import { PaymentModal } from '../Payment/PaymentModal';
 
 export function SubscriptionPage() {
   const { user, isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { initiatePayment } = usePayment();
   const [currentPlan, setCurrentPlan] = useState<Plan>(PLANS.free);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
-  const selectedPlan = location.state?.selectedPlan;
   const billingInterval = location.state?.billingInterval || 'monthly';
 
   useEffect(() => {
@@ -50,17 +54,36 @@ export function SubscriptionPage() {
     loadSubscriptionData();
   }, [user, navigate, toast]);
 
-  const handlePlanSelect = async (plan: Plan) => {
+  const handlePlanSelect = (plan: Plan) => {
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    toast({
-      title: 'Plan Selected',
-      description: `You've selected the ${plan.name} plan. Implementation pending.`,
-      type: 'info',
-    });
+    setSelectedPlan(plan);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = async () => {
+    if (!selectedPlan) return;
+
+    try {
+      await initiatePayment(selectedPlan, user?.id);
+      setCurrentPlan(selectedPlan);
+      toast({
+        title: 'Success',
+        description: `You've successfully subscribed to the ${selectedPlan.name} plan.`,
+        type: 'success',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Payment failed. Please try again.',
+        type: 'error',
+      });
+    } finally {
+      setIsPaymentModalOpen(false);
+    }
   };
 
   if (loading) {
@@ -140,6 +163,15 @@ export function SubscriptionPage() {
         {usage && <UsageStats usage={usage} plan={currentPlan} />}
         <BillingHistory invoices={[]} />
       </div>
+
+      {/* Payment Modal */}
+      {isPaymentModalOpen && selectedPlan && (
+        <PaymentModal
+          plan={selectedPlan}
+          onClose={() => setIsPaymentModalOpen(false)}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }
