@@ -67,8 +67,8 @@ export function RecentActivityPanel() {
                 Conversation ID: {conversation.id}
               </h4>
               <ul className="space-y-3 mt-3">
-                {conversation.interactions.map(interaction => (
-                  <li key={interaction.timestamp.getTime()} className="p-3 bg-white rounded-md shadow border border-gray-300">
+                {conversation.interactions.map((interaction, index) => (
+                  <li key={`${conversation.id}-${index}`} className="p-3 bg-white rounded-md shadow border border-gray-300">
                     <div className="space-y-2">
                       {/* Query Section */}
                       <div className="flex justify-between items-center">
