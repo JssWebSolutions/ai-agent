@@ -15,7 +15,14 @@ export function PlanSelector() {
 
   const handleSelectPlan = (plan: Plan) => {
     if (!user) {
-      navigate('/auth');
+      // Redirect to auth if not logged in
+      navigate('/auth', { 
+        state: { 
+          returnTo: '/subscription',
+          selectedPlan: plan,
+          billingInterval 
+        }
+      });
       return;
     }
 

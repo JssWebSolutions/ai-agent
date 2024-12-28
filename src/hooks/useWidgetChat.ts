@@ -26,13 +26,25 @@ export function useWidgetChat(agent: Agent) {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [conversationId] = useState(() => uuidv4()); // Generate a unique conversation ID
+  const [conversationId] = useState(() => uuidv4());
   const { speak } = useVoiceSynthesis();
   const { validateApiKey } = useApiKeys();
   const { addInteraction } = useAgentStore();
   const { showLoading, hideLoading } = useLoadingToast();
 
-  const sendMessage = useCallback(async (text: string) => {
+  // Initialize speech recognition
+  const handleSpeechResult = useCallback((transcript: string) => {
+    if (transcript.trim()) {
+      handleMessage(transcript);
+    }
+  }, []);
+
+  const { isListening, startListening, stopListening } = useSpeechRecognition({
+    language: agent.language,
+    onResult: handleSpeechResult
+  });
+
+  const handleMessage = async (text: string) => {
     if (!text.trim() || !agent || isProcessing) return;
 
     if (!validateApiKey(agent)) return;
@@ -70,7 +82,7 @@ export function useWidgetChat(agent: Agent) {
         response,
         responseTime,
         successful: true,
-        conversationId // Add conversation ID to interaction
+        conversationId
       });
 
       if ('speechSynthesis' in window) {
@@ -94,25 +106,23 @@ export function useWidgetChat(agent: Agent) {
         response: errorMessage,
         responseTime,
         successful: false,
-        conversationId // Add conversation ID to interaction
+        conversationId
       });
     } finally {
       setIsProcessing(false);
       hideLoading();
     }
-  }, [agent, isProcessing, validateApiKey, speak, addInteraction, showLoading, hideLoading, conversationId]);
+  };
 
-  // ... rest of the code remains the same
-  
   return {
     messages,
     inputMessage,
     isListening,
     isProcessing,
     setInputMessage,
-    sendMessage,
+    sendMessage: handleMessage,
     startListening,
     stopListening,
-    conversationId // Expose conversation ID
+    conversationId
   };
 }
