@@ -11,6 +11,8 @@ import { AgentList } from './components/Agents/AgentList';
 import { SubscriptionPage } from './components/Subscription/SubscriptionPage';
 import { ModernLandingPage } from './components/Landing/ModernLandingPage';
 import { PlanSelector } from './components/Subscription/Plans/PlanSelector';
+import { AnalyticsDashboard } from './components/RealTime/Dashboard/AnalyticsDashboard';
+import { ChatInterface } from './components/RealTime/Chat/ChatInterface';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -52,6 +54,26 @@ export default function App() {
           <PrivateRoute>
             <MainLayout>
               <UserDashboard />
+            </MainLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          <PrivateRoute>
+            <MainLayout>
+              <AnalyticsDashboard />
+            </MainLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/chat"
+        element={
+          <PrivateRoute>
+            <MainLayout>
+              <ChatInterface />
             </MainLayout>
           </PrivateRoute>
         }

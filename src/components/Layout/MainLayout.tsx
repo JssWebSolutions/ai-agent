@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmailVerificationBanner } from '../EmailVerificationBanner';
 import { UserMenu } from '../UserProfile/UserMenu';
-import { Menu, Home, Users, Settings, CreditCard, X } from 'lucide-react';
+import { Menu, Home, Users, Settings, CreditCard, Activity, MessageSquare } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface MainLayoutProps {
@@ -16,6 +16,8 @@ export function MainLayout({ children }: MainLayoutProps) {
   const menuItems = [
     { icon: Home, label: 'Home', path: '/' },
     { icon: Users, label: 'All Agents', path: '/agent' },
+    { icon: Activity, label: 'Real-Time Analytics', path: '/analytics' },
+    { icon: MessageSquare, label: 'Live Chat', path: '/chat' },
     { icon: CreditCard, label: 'Subscription', path: '/subscription' },
     { icon: Settings, label: 'Account Settings', path: '/settings' }
   ];
@@ -48,7 +50,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             onClick={() => setIsMenuOpen(false)}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <X className="w-5 h-5" />
+            <Menu className="w-5 h-5" />
           </button>
         </div>
         <nav className="p-4">
