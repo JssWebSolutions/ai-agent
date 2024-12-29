@@ -56,7 +56,7 @@ export function Navbar() {
           <div className="px-4 py-2 space-y-1">
             <a href="#features" className="block px-3 py-2 text-gray-600 hover:text-gray-900">Features</a>
             <a href="#testimonials" className="block px-3 py-2 text-gray-600 hover:text-gray-900">Testimonials</a>
-            <a href="/pricing" className="block px-3 py-2 text-gray-600 hover:text-gray-900">Pricing</a>
+            <a href="/plans" className="block px-3 py-2 text-gray-600 hover:text-gray-900">Pricing</a>
             {isAuthenticated ? (
               <button
                 onClick={() => navigate('/dashboard')}
