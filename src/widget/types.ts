@@ -10,6 +10,8 @@ export interface WidgetConfig {
   buttonSize?: 'small' | 'medium' | 'large';
   borderRadius?: 'none' | 'small' | 'medium' | 'large';
   showAgentImage?: boolean;
+  name?: string;
+  image?: string;
 }
 
 export interface Message {
