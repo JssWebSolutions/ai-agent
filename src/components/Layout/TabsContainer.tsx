@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
 import { Settings, Sliders, BookOpen, BarChart2, Code } from 'lucide-react';
 import { AgentTab } from '../Tabs/AgentTab';

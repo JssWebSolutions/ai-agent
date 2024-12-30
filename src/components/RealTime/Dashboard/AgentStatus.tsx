@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Bot, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 

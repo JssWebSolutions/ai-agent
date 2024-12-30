@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { User } from '../../types/auth';
 import { Users, Bot, Activity } from 'lucide-react';
 

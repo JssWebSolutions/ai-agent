@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import{ useState, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { User, Mail, Key, Phone, MapPin, Upload, X, ArrowLeft } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';

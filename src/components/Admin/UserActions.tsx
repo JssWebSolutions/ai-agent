@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import{ useState } from 'react';
 import { MoreVertical, Shield, Trash2, Key } from 'lucide-react';
 import { User } from '../../types/auth';
 import { setAdminRole, deleteUser, resetPassword } from '../../utils/admin';

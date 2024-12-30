@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useAgentStore } from '../../store/agentStore';
 import { Bot, Trash2 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';

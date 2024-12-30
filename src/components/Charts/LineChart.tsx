@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 interface LineChartProps {

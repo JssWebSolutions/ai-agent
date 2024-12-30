@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import{ useCallback } from 'react';
 import { Settings } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { ImageSelector } from './ImageSelector';

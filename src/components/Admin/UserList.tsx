@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { User } from '../../types/auth';
 import { formatDistanceToNow } from 'date-fns';
 import { UserActions } from './UserActions';

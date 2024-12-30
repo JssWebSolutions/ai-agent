@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BarChart as RechartsBarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts';
 
 interface BarChartProps {

@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import{ useState, FormEvent } from 'react';
 import { Upload, X } from 'lucide-react';
 
 interface ImageSelectorProps {

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Check, X } from 'lucide-react';
 import { Plan, PlanTier } from '../../types/subscription';
 import { PLANS } from '../../services/subscription/plans';

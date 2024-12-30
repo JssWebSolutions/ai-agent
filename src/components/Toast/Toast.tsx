@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import{ useEffect } from 'react';
 import { AlertCircle, CheckCircle, Info, XCircle } from 'lucide-react';
 import { cn } from '../../utils/cn';
 

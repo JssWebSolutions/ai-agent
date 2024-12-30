@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useAuth } from '../../contexts/AuthContext';
 import { Plan } from '../../types/subscription';
 import { updateSubscription } from '../../services/subscription/subscriptionService';

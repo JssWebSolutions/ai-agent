@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import{ useState } from 'react';
 import { BookOpen, MessageCircle, Upload, FileText, Plus, Trash2 } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { TrainingExample } from '../../types/agent';

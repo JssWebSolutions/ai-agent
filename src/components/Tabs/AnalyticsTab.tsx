@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BarChart2, Clock, Users, TrendingUp, MessageCircle } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { useAnalytics } from '../../hooks/useAnalytics';
