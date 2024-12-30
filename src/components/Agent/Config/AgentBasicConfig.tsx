@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Agent } from '../../../types/agent';
 import { FormField } from '../../Form/FormField';
 import { ImageSelector } from '../ImageSelector';

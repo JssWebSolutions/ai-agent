@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Download, FileText } from 'lucide-react';
 import { Invoice } from '../../types/subscription';
 

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Volume2, Play } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { useVoiceSynthesis } from '../../hooks/useVoiceSynthesis';

@@ -1,3 +1,32 @@
+export interface VoiceSettings {
+  gender: 'male' | 'female';
+  pitch: number;
+  speed: number;
+  accent: string;
+}
+
+export type ResponseStyle = 'concise' | 'detailed';
+export type InteractionMode = 'informative' | 'conversational' | 'support' | 'interactive';
+
+export interface WidgetSettings {
+  theme: 'light' | 'dark' | 'custom';
+  position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  buttonSize: 'small' | 'medium' | 'large';
+  borderRadius: 'none' | 'small' | 'medium' | 'large';
+  showAgentImage: boolean;
+  customColors: {
+    primary: string;
+    background: string;
+    text: string;
+  } | null;
+}
+
+export interface TrainingExample {
+  input: string;
+  output: string;
+  category: string;
+}
+
 export interface Agent {
   id: string;
   userId: string;
@@ -30,5 +59,3 @@ export interface Agent {
     }>;
   };
 }
-
-// ... rest of the types remain the same

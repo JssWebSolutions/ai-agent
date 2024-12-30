@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Check, CheckCheck } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 

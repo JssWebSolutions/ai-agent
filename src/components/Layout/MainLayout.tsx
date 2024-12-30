@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import{ useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmailVerificationBanner } from '../EmailVerificationBanner';
 import { UserMenu } from '../UserProfile/UserMenu';
@@ -14,7 +14,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuItems = [
-    { icon: Home, label: 'Home', path: '/' },
+    { icon: Home, label: 'Home', path: '/user' },
     { icon: Users, label: 'All Agents', path: '/agent' },
     { icon: Activity, label: 'Real-Time Analytics', path: '/analytics' },
     { icon: MessageSquare, label: 'Live Chat', path: '/chat' },

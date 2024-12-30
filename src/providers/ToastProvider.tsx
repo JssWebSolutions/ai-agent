@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Toast } from '../components/Toast/Toast';
 import { ToastProvider as ToastContextProvider, useToast } from '../contexts/ToastContext';
 

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Bot, MessageSquare, Zap, Shield } from 'lucide-react';
 import { cn } from '../../utils/cn';
 

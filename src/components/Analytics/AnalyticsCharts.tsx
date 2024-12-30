@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BarChart2 } from 'lucide-react';
 import { BarChart } from '../Charts/BarChart';
 import { LineChart } from '../Charts/LineChart';

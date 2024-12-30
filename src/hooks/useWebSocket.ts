@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { WS_CONFIG } from '../config/websocket';
 
 interface WebSocketHook {
   lastMessage: string | null;
@@ -6,42 +7,57 @@ interface WebSocketHook {
   readyState: number;
 }
 
-export function useWebSocket(url: string): WebSocketHook {
+export function useWebSocket(endpoint: string): WebSocketHook {
   const [lastMessage, setLastMessage] = useState<string | null>(null);
   const [readyState, setReadyState] = useState<number>(WebSocket.CONNECTING);
   const ws = useRef<WebSocket | null>(null);
+  const reconnectTimeout = useRef<NodeJS.Timeout>();
+  const retryCount = useRef(0);
+
+  const connect = useCallback(() => {
+    try {
+      const url = `${WS_CONFIG.BASE_URL}${endpoint}`;
+      ws.current = new WebSocket(url);
+
+      ws.current.onopen = () => {
+        console.log(`WebSocket connected to ${endpoint}`);
+        setReadyState(WebSocket.OPEN);
+        retryCount.current = 0;
+      };
+
+      ws.current.onmessage = (event) => {
+        setLastMessage(event.data);
+      };
+
+      ws.current.onclose = () => {
+        setReadyState(WebSocket.CLOSED);
+        if (retryCount.current < WS_CONFIG.MAX_RETRIES) {
+          reconnectTimeout.current = setTimeout(() => {
+            retryCount.current++;
+            connect();
+          }, WS_CONFIG.RECONNECT_INTERVAL);
+        }
+      };
+
+      ws.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    } catch (error) {
+      console.error('WebSocket connection error:', error);
+    }
+  }, [endpoint]);
 
   useEffect(() => {
-    const socket = new WebSocket(url);
-
-    socket.onopen = () => {
-      console.log('WebSocket connected');
-      setReadyState(WebSocket.OPEN);
-    };
-
-    socket.onmessage = (event) => {
-      setLastMessage(event.data);
-    };
-
-    socket.onclose = () => {
-      console.log('WebSocket disconnected');
-      setReadyState(WebSocket.CLOSED);
-      // Attempt to reconnect after 5 seconds
-      setTimeout(() => {
-        ws.current = new WebSocket(url);
-      }, 5000);
-    };
-
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    ws.current = socket;
-
+    connect();
     return () => {
-      socket.close();
+      if (ws.current) {
+        ws.current.close();
+      }
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+      }
     };
-  }, [url]);
+  }, [connect]);
 
   const sendMessage = useCallback((message: any) => {
     if (ws.current?.readyState === WebSocket.OPEN) {

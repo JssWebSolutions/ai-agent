@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Bot, Users, Activity, Clock } from 'lucide-react';
 import { Agent } from '../../types/agent';
 import { cn } from '../../utils/cn';

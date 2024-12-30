@@ -1,10 +1,10 @@
-import { StrictMode } from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { ToastProvider } from './providers/ToastProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
-import { BrowserRouter } from 'react-router-dom'; // Import BrowserRouter
 
 const container = document.getElementById('root');
 if (!container) {
@@ -14,13 +14,13 @@ if (!container) {
 const root = createRoot(container);
 
 root.render(
-  <StrictMode>
-    <BrowserRouter> {/* Wrap App with BrowserRouter */}
+  <React.StrictMode>
+    <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
           <App />
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>
-  </StrictMode>
+  </React.StrictMode>
 );

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { MessageCircle, Users, HardDrive, AlertTriangle } from 'lucide-react';
 import { Usage } from '../../types/subscription';
 import { Plan } from '../../types/subscription';

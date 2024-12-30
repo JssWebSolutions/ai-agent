@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Paintbrush } from 'lucide-react';
 import { Agent } from '../../types/agent';
 import { FormField } from '../Form/FormField';

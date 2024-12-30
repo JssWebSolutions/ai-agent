@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import{ useState, useEffect, useRef } from 'react';
 import { Send, Paperclip, Image as ImageIcon, Smile } from 'lucide-react';
 import { useWebSocket } from '../../../hooks/useWebSocket';
 import { ChatMessage } from './ChatMessage';

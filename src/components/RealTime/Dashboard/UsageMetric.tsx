@@ -1,6 +1,6 @@
-import React from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+
 import { cn } from '../../../utils/cn';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface UsageMetricProps {
   title: string;

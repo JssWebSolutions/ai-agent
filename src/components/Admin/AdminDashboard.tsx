@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
 import { Users, Settings, Database } from 'lucide-react';
 import { UserList } from './UserList';
 import { Analytics } from './Analytics';
+import { User } from '../../types/auth';
 import { FirebaseConfigTab } from './FirebaseConfigTab';
 import { getAllUsers } from '../../services/firestore/users';
 import { useLoadingToast } from '../../hooks/useLoadingToast';

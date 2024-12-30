@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Settings } from 'lucide-react';
 import { Agent } from '../../../types/agent';
 import { AgentBasicConfig } from './AgentBasicConfig';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import{ useState } from 'react';
 import { Code, Copy, Check } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { AppearanceSettings } from './AppearanceSettings';

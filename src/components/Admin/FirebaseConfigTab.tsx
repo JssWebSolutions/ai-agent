@@ -1,5 +1,5 @@
-import React from 'react';
-import { Database, Key, Shield, Settings } from 'lucide-react';
+
+import { Database} from 'lucide-react';
 import { FirebaseAuthConfig } from './FirebaseConfig/FirebaseAuthConfig';
 import { FirestoreConfig } from './FirebaseConfig/FirestoreConfig';
 import { StorageConfig } from './FirebaseConfig/StorageConfig';

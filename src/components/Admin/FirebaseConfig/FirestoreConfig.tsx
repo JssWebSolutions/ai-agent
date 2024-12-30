@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import{ useState } from 'react';
 import { Database, Save } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
 import { updateFirebaseConfig } from '../../../services/admin/firebaseConfig';

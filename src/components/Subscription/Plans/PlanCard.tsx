@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Check, ArrowRight } from 'lucide-react';
 import { Plan } from '../../../types/subscription';
 import { cn } from '../../../utils/cn';

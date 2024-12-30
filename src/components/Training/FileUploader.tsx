@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import{ useRef, useState } from 'react';
 import { Upload, FileText, AlertCircle, Check } from 'lucide-react';
 import { parseTrainingFile } from '../../utils/fileParser';
 import { useAgentStore } from '../../store/agentStore';
