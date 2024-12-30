@@ -1,48 +1,49 @@
 import { useState } from 'react';
 import { Plan } from '../types/subscription';
-import { generateReceipt, sendReceiptEmail } from '../services/payment/receipt';
-import { useAuth } from '../contexts/AuthContext';
+import { createPaymentIntent, processPayment } from '../services/payment/stripe';
 import { useToast } from '../contexts/ToastContext';
-import { useNavigate } from 'react-router-dom';
+import { PaymentError } from '../services/payment/errors';
 
 export function usePayment() {
-  const [processing, setProcessing] = useState(false);
-  const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  const handlePaymentSuccess = async (transactionId: string, plan: Plan) => {
-    setProcessing(true);
+  const handlePayment = async (plan: Plan, paymentMethod: { card: any }) => {
+    setIsProcessing(true);
     try {
-      // Generate and send receipt
-      await generateReceipt(transactionId, plan);
-      if (user?.email) {
-        await sendReceiptEmail(user.email, transactionId);
+      const clientSecret = await createPaymentIntent(plan);
+      const result = await processPayment(clientSecret, paymentMethod);
+
+      if (!result.success) {
+        throw new PaymentError(
+          result.error || 'Payment failed',
+          'payment_failed'
+        );
       }
 
-      toast({
-        title: 'Success',
-        description: 'Your subscription has been activated',
-        type: 'success'
-      });
-
-      // Redirect to success page
-      navigate('/subscription/success', {
-        state: { plan, transactionId }
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: 'Failed to process subscription. Please contact support.',
-        type: 'error'
-      });
+      return result.transactionId;
+    } catch (error) {
+      if (error instanceof PaymentError) {
+        toast({
+          title: 'Payment Error',
+          description: error.message,
+          type: 'error'
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'An unexpected error occurred',
+          type: 'error'
+        });
+      }
+      throw error;
     } finally {
-      setProcessing(false);
+      setIsProcessing(false);
     }
   };
 
   return {
-    processing,
-    handlePaymentSuccess
+    isProcessing,
+    handlePayment
   };
 }

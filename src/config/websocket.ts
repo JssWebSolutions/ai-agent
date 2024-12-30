@@ -1,8 +1,8 @@
 import { env } from './env';
 
 export const WS_CONFIG = {
-  // Use environment variable or fallback to secure WebSocket on same host
-  BASE_URL: env.production 
+  // Use secure WebSocket when on HTTPS, regular WebSocket for HTTP
+  BASE_URL: window.location.protocol === 'https:' 
     ? `wss://${window.location.host}`
     : `ws://${window.location.host}`,
   ENDPOINTS: {
