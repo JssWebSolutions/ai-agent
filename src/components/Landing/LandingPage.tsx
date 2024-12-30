@@ -1,22 +1,19 @@
-
+import React from 'react';
 import { 
   ArrowRight, 
   CheckCircle, 
-  ChevronDown,
-  Menu,
-  X,
   Github,
-  Twitter,
+  X,
   Linkedin
 } from 'lucide-react';
-import { cn } from '../../utils/cn';
 import { useAuth } from '../../contexts/AuthContext'; 
+
 
 
 
 export function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const { isAuthenticated, user } = useAuth(); // Access authentication state and user
+  const { isAuthenticated } = useAuth(); // Access authentication state and user
   const dashboardLink = '/user'; // Define the dashboard link for authenticated users
 
   const features = [
@@ -347,7 +344,7 @@ export function LandingPage() {
                     <Github className="w-6 h-6" />
                   </a>
                   <a href="#" className="hover:text-blue-500 transition-colors">
-                    <Twitter className="w-6 h-6" />
+                    <X className="w-6 h-6" />
                   </a>
                   <a href="#" className="hover:text-blue-500 transition-colors">
                     <Linkedin className="w-6 h-6" />
