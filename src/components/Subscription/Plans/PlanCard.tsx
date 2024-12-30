@@ -20,6 +20,12 @@ export function PlanCard({
 }: PlanCardProps) {
   const price = billingInterval === 'monthly' ? plan.price.monthly : plan.price.annual;
   
+  const handleSelect = () => {
+    if (!isCurrentPlan) {
+      onSelect(plan);
+    }
+  };
+
   return (
     <div className={cn(
       "relative rounded-2xl border p-8 shadow-sm transition-shadow hover:shadow-md",
@@ -53,7 +59,7 @@ export function PlanCard({
       </ul>
 
       <button
-        onClick={() => onSelect(plan)}
+        onClick={handleSelect}
         disabled={isCurrentPlan}
         className={cn(
           "mt-8 w-full rounded-lg px-4 py-2 text-center font-medium",
@@ -62,7 +68,7 @@ export function PlanCard({
             : isPopular
               ? "bg-blue-600 text-white hover:bg-blue-700"
               : "bg-gray-900 text-white hover:bg-gray-800",
-          "flex items-center justify-center gap-2"
+          "flex items-center justify-center gap-2 transition-colors"
         )}
       >
         {isCurrentPlan ? (

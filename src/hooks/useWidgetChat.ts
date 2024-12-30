@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { Agent } from '../types/agent';
 import { getChatResponse } from '../services/api';
 import { useVoiceSynthesis } from './useVoiceSynthesis';
@@ -25,12 +26,25 @@ export function useWidgetChat(agent: Agent) {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [conversationId] = useState(() => uuidv4());
   const { speak } = useVoiceSynthesis();
   const { validateApiKey } = useApiKeys();
   const { addInteraction } = useAgentStore();
   const { showLoading, hideLoading } = useLoadingToast();
 
-  const sendMessage = useCallback(async (text: string) => {
+  // Initialize speech recognition
+  const handleSpeechResult = useCallback((transcript: string) => {
+    if (transcript.trim()) {
+      handleMessage(transcript);
+    }
+  }, []);
+
+  const { isListening, startListening, stopListening } = useSpeechRecognition({
+    language: agent.language,
+    onResult: handleSpeechResult
+  });
+
+  const handleMessage = async (text: string) => {
     if (!text.trim() || !agent || isProcessing) return;
 
     if (!validateApiKey(agent)) return;
@@ -67,7 +81,8 @@ export function useWidgetChat(agent: Agent) {
         query: text,
         response,
         responseTime,
-        successful: true
+        successful: true,
+        conversationId
       });
 
       if ('speechSynthesis' in window) {
@@ -90,23 +105,14 @@ export function useWidgetChat(agent: Agent) {
         query: text,
         response: errorMessage,
         responseTime,
-        successful: false
+        successful: false,
+        conversationId
       });
     } finally {
       setIsProcessing(false);
       hideLoading();
     }
-  }, [agent, isProcessing, validateApiKey, speak, addInteraction, showLoading, hideLoading]);
-
-  const handleSpeechResult = useCallback((transcript: string) => {
-    setInputMessage(transcript);
-    sendMessage(transcript);
-  }, [sendMessage]);
-
-  const { isListening, startListening, stopListening } = useSpeechRecognition({
-    language: agent.language,
-    onResult: handleSpeechResult
-  });
+  };
 
   return {
     messages,
@@ -114,8 +120,9 @@ export function useWidgetChat(agent: Agent) {
     isListening,
     isProcessing,
     setInputMessage,
-    sendMessage,
+    sendMessage: handleMessage,
     startListening,
-    stopListening
+    stopListening,
+    conversationId
   };
 }

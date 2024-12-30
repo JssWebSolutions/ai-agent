@@ -6,6 +6,26 @@ import { Plan, Subscription } from '../../types/subscription';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
+export async function createPaymentIntent(plan: Plan): Promise<string> {
+  try {
+    const response = await fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planId: plan.id, amount: plan.price.monthly })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to create payment intent');
+    }
+    
+    const { clientSecret } = await response.json();
+    return clientSecret;
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    throw new Error('Failed to initialize payment');
+  }
+}
+
 export async function createSubscription(
   user: User,
   plan: Plan,

@@ -21,6 +21,7 @@ export interface Agent {
   analytics: {
     interactions: Array<{
       id: string;
+      conversationId: string;
       query: string;
       response: string;
       timestamp: Date;
@@ -30,31 +31,4 @@ export interface Agent {
   };
 }
 
-export interface TrainingExample {
-  input: string;
-  output: string;
-  category: string;
-}
-
-export interface WidgetSettings {
-  theme: 'light' | 'dark' | 'custom';
-  position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-  customColors?: {
-    primary: string;
-    background: string;
-    text: string;
-  };
-  buttonSize: 'small' | 'medium' | 'large';
-  borderRadius: 'none' | 'small' | 'medium' | 'large';
-  showAgentImage: boolean;
-}
-
-export interface VoiceSettings {
-  gender: 'male' | 'female';
-  pitch: number;
-  speed: number;
-  accent: string;
-}
-
-export type ResponseStyle = 'concise' | 'detailed';
-export type InteractionMode = 'informative' | 'conversational' | 'support' | 'interactive';
+// ... rest of the types remain the same

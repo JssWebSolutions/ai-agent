@@ -9,8 +9,10 @@ import { UserDashboard } from './components/Dashboard/UserDashboard';
 import { AgentDetail } from './components/Agent/AgentDetail';
 import { AgentList } from './components/Agents/AgentList';
 import { SubscriptionPage } from './components/Subscription/SubscriptionPage';
-import { LandingPage } from './components/Landing/LandingPage';
+import { ModernLandingPage } from './components/Landing/ModernLandingPage';
 import { PlanSelector } from './components/Subscription/Plans/PlanSelector';
+import { AnalyticsDashboard } from './components/RealTime/Dashboard/AnalyticsDashboard';
+import { ChatInterface } from './components/RealTime/Chat/ChatInterface';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -40,7 +42,7 @@ export default function App() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<ModernLandingPage />} />
       <Route path="/plans" element={<PlanSelector />} />
       <Route path="/subscription" element={<SubscriptionPage />} />
       <Route path="/auth" element={<AuthForm mode={authMode} onToggleMode={handleToggleAuthMode} />} />
@@ -52,6 +54,26 @@ export default function App() {
           <PrivateRoute>
             <MainLayout>
               <UserDashboard />
+            </MainLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          <PrivateRoute>
+            <MainLayout>
+              <AnalyticsDashboard />
+            </MainLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/chat"
+        element={
+          <PrivateRoute>
+            <MainLayout>
+              <ChatInterface />
             </MainLayout>
           </PrivateRoute>
         }
