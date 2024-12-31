@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Agent } from '../types/agent';
+import { Agent, Interaction } from '../types/agent';
 import defaultAgent from '../components/Agent/DefaultAgent';
 import * as FirestoreService from '../services/firestore/agents';
 
@@ -147,20 +147,25 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     await get().updateAgent(updatedAgent);
   },
 
-  addInteraction: async (agentId, interaction) => {
+  addInteraction: async (agentId: string, interaction: Interaction) => {
     set({ isLoading: true, error: null });
     try {
       await FirestoreService.addInteraction(agentId, interaction);
   
-      set(state => {
-        const updatedAgents = state.agents.map(agent =>
+      set((state) => {
+        const updatedAgents = state.agents.map((agent) =>
           agent.id === agentId
             ? {
                 ...agent,
                 analytics: {
                   ...agent.analytics,
                   interactions: [
-                    { id: `interaction-${Date.now()}`, ...interaction, timestamp: new Date() },
+                    {
+                      id: `interaction-${Date.now()}`,
+                      conversationId: interaction.conversationId || "default-conversation-id",
+                      ...interaction,
+                      timestamp: new Date(),
+                    },
                     ...(agent.analytics.interactions || []),
                   ],
                 },
@@ -170,15 +175,18 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   
         return {
           agents: updatedAgents,
-          selectedAgent: state.selectedAgent?.id === agentId ? updatedAgents.find(a => a.id === agentId) : state.selectedAgent,
+          selectedAgent:
+            state.selectedAgent?.id === agentId
+              ? updatedAgents.find((a) => a.id === agentId)
+              : state.selectedAgent,
         };
       });
     } catch (error: any) {
-      set({ error: error.message || 'Failed to add interaction' });
+      set({ error: error.message || "Failed to add interaction" });
     } finally {
       set({ isLoading: false });
     }
-  }
+  }    
   
 
 

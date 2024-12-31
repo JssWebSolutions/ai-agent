@@ -1,6 +1,5 @@
 
 import { Bot, MessageSquare, Zap, Shield } from 'lucide-react';
-import { cn } from '../../../utils/cn';
 import { FeatureCard } from '../UI/FeatureCard';
 
 const features = [

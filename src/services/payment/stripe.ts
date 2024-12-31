@@ -75,8 +75,12 @@ export async function processPayment(
     });
 
     if (error) {
-      throw new PaymentError(error.message, 'payment_failed');
+      throw new PaymentError(
+        error.message || 'An unexpected error occurred during payment processing.',
+        'payment_failed'
+      );
     }
+    
 
     return {
       success: true,

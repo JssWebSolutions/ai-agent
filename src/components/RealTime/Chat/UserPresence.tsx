@@ -9,7 +9,7 @@ export function UserPresence({ users }: UserPresenceProps) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex -space-x-2">
-        {users.slice(0, 3).map((user, index) => (
+        {users.slice(0, 3).map((user) => (
           <div
             key={user}
             className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center ring-2 ring-white"

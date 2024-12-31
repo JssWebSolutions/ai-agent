@@ -2,7 +2,6 @@ import { TrainingExample } from '../types/agent';
 
 export async function parseTrainingFile(file: File): Promise<TrainingExample[]> {
   const text = await file.text();
-  const examples: TrainingExample[] = [];
 
   try {
     if (file.name.endsWith('.json')) {

@@ -1,6 +1,5 @@
 import { collection, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { COLLECTIONS } from './constants';
 
 export async function createDocument(collectionName: string, id: string, data: any) {
   try {

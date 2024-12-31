@@ -1,5 +1,5 @@
 
-import { BarChart2, Clock, Users, TrendingUp, MessageCircle } from 'lucide-react';
+import { Clock, Users, TrendingUp, MessageCircle } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { AnalyticsCard } from '../Analytics/AnalyticsCard';

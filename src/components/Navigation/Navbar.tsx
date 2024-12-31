@@ -1,4 +1,4 @@
-import{ useState } from 'react';
+import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,7 +22,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
             <a href="#testimonials" className="text-gray-600 hover:text-gray-900">Testimonials</a>
-            <a href="/pricing" className="text-gray-600 hover:text-gray-900">Pricing</a>
+            <a href="/plans" className="text-gray-600 hover:text-gray-900">Pricing</a>
             {isAuthenticated ? (
               <button
                 onClick={() => navigate('/dashboard')}

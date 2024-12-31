@@ -1,5 +1,3 @@
-import { User } from './auth';
-
 export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
 
 export interface Plan {

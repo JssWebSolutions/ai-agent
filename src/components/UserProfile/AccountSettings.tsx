@@ -1,8 +1,4 @@
-import{ useState, useRef } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { User, Mail, Key, Phone, MapPin, Upload, X, ArrowLeft } from 'lucide-react';
-import { useToast } from '../../contexts/ToastContext';
-import { uploadProfileImage } from '../../services/storage/profileImage';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function AccountSettings() {

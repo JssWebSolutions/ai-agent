@@ -1,18 +1,33 @@
-
 import { MapPin } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 
+interface Address {
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+}
+
+interface User {
+  address?: Address; // Make address optional if it can be undefined
+  // Other user properties can be added here
+}
+
 export function AddressSection() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser } = useAuth() as {
+    user: User;
+    updateUser: (data: Partial<User>) => void;
+  };
 
   if (!user) return null;
 
-  const handleAddressChange = (field: keyof typeof user.address, value: string) => {
+  const handleAddressChange = (field: keyof Address, value: string) => {
     updateUser({
       address: {
         ...user.address,
-        [field]: value
-      }
+        [field]: value || '', // Default to an empty string if value is undefined
+      } as Address, // Ensure the type matches Address
     });
   };
 
@@ -25,7 +40,9 @@ export function AddressSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Street Address</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Street Address
+          </label>
           <input
             type="text"
             value={user.address?.street || ''}
@@ -36,7 +53,9 @@ export function AddressSection() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">City</label>
+          <label className="block text-sm font-medium text-gray-700">
+            City
+          </label>
           <input
             type="text"
             value={user.address?.city || ''}
@@ -47,7 +66,9 @@ export function AddressSection() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">State/Province</label>
+          <label className="block text-sm font-medium text-gray-700">
+            State/Province
+          </label>
           <input
             type="text"
             value={user.address?.state || ''}
@@ -58,7 +79,9 @@ export function AddressSection() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Postal Code</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Postal Code
+          </label>
           <input
             type="text"
             value={user.address?.postalCode || ''}
@@ -69,7 +92,9 @@ export function AddressSection() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Country</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Country
+          </label>
           <input
             type="text"
             value={user.address?.country || ''}
