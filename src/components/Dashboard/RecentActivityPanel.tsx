@@ -1,59 +1,60 @@
-import{ useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAgentStore } from '../../store/agentStore';
 import { cn } from '../../utils/cn';
+import { Interaction } from '../../types/agent';
 
-interface Interaction {
-  id: string;
-  query: string;
-  response: string;
-  timestamp: Date;
-  conversationId: string;
+interface ConversationWithAgent extends Interaction {
+  agentName: string;
 }
 
-interface Conversation {
+interface GroupedConversation {
   id: string;
-  interactions: Interaction[];
+  interactions: ConversationWithAgent[];
   lastMessage: Date;
   agentName: string;
 }
 
 export function RecentActivityPanel() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<GroupedConversation[]>([]);
   const [expandedConversationId, setExpandedConversationId] = useState<string | null>(null);
   const { agents } = useAgentStore();
 
   useEffect(() => {
     const fetchConversations = () => {
-      const allInteractions = agents.reduce((acc, agent) => [
-        ...acc,
-        ...(agent.analytics?.interactions || []).map(interaction => ({
+      // Collect all interactions with agent names
+      const allInteractions: ConversationWithAgent[] = agents.flatMap(agent => 
+        (agent.analytics?.interactions || []).map(interaction => ({
           ...interaction,
-          agentName: agent.name
+          agentName: agent.name || 'Unnamed Agent'
         }))
-      ], [] as Array<Interaction & { agentName: string }>);
+      );
 
-      const groupedConversations = allInteractions.reduce((acc, interaction) => {
+      // Group interactions by conversation ID
+      const groupedConversations = allInteractions.reduce<GroupedConversation[]>((acc, interaction) => {
         if (!interaction.conversationId) return acc;
 
-        const conversation = acc.find(c => c.id === interaction.conversationId);
-        if (conversation) {
-          conversation.interactions.push(interaction);
-          if (interaction.timestamp > conversation.lastMessage) {
-            conversation.lastMessage = interaction.timestamp;
+        const existingConversation = acc.find(c => c.id === interaction.conversationId);
+        if (existingConversation) {
+          existingConversation.interactions.push(interaction);
+          if ((interaction.timestamp ?? 0) > existingConversation.lastMessage) {
+            existingConversation.lastMessage = interaction.timestamp ?? new Date();
           }
         } else {
           acc.push({
             id: interaction.conversationId,
             interactions: [interaction],
-            lastMessage: interaction.timestamp,
+            lastMessage: interaction.timestamp ?? new Date(),
             agentName: interaction.agentName
           });
         }
         return acc;
-      }, [] as Conversation[]);
+      }, []);
 
+      // Sort conversations by most recent message
       groupedConversations.sort((a, b) => b.lastMessage.getTime() - a.lastMessage.getTime());
+      
+      // Take only the 5 most recent conversations
       setConversations(groupedConversations.slice(0, 5));
     };
 
@@ -97,7 +98,6 @@ export function RecentActivityPanel() {
               </span>
             </div>
             
-            {/* Accordion content: show only if expanded */}
             {expandedConversationId === conversation.id && (
               <ul className="space-y-3">
                 {conversation.interactions.slice(0, 3).map(interaction => (
@@ -106,7 +106,7 @@ export function RecentActivityPanel() {
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-medium text-gray-800">{interaction.query}</span>
                         <span className="text-sm text-gray-500">
-                          {formatDistanceToNow(interaction.timestamp, { addSuffix: true })}
+                          {interaction.timestamp ? formatDistanceToNow(interaction.timestamp, { addSuffix: true }) : 'Unknown time'}
                         </span>
                       </div>
                       <div className="bg-gray-100 p-3 rounded-md border border-gray-300">
@@ -116,7 +116,7 @@ export function RecentActivityPanel() {
                   </li>
                 ))}
                 {conversation.interactions.length > 3 && (
-                  <li key={`${conversation.id}-more`} className="text-center text-sm text-gray-500">
+                  <li className="text-center text-sm text-gray-500">
                     + {conversation.interactions.length - 3} more messages
                   </li>
                 )}
