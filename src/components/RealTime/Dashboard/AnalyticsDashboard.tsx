@@ -1,40 +1,57 @@
-import{ useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Activity, Users, MessageSquare, Database } from 'lucide-react';
 import { useWebSocket } from '../../../hooks/useWebSocket';
 import { UsageMetric } from './UsageMetric';
 import { AgentStatus } from './AgentStatus';
 import { StorageUsage } from './StorageUsage';
 import { MessageStats } from './MessageStats';
+import { useAgentStore } from '../../../store/agentStore';
+import { calculateMetrics, calculateChartData } from '../../../utils/analytics';
 
 export function AnalyticsDashboard() {
+  const { agents } = useAgentStore();
   const [metrics, setMetrics] = useState({
     totalMessages: 0,
     activeAgents: 0,
     storageUsed: 0,
-    storageLimit: 1000000, // 1GB in KB
-    messageRate: 0
+    messageRate: 0,
+    userSatisfaction: 0,
+    successRate: 0
   });
 
   const { lastMessage, sendMessage } = useWebSocket('wss://your-websocket-url/analytics');
 
   useEffect(() => {
-    // Request initial data
-    sendMessage({ type: 'GET_METRICS' });
+    // Calculate metrics from actual agent data
+    const calculatedMetrics = calculateMetrics(agents);
+    const { interactionData, responseTimeData } = calculateChartData(agents);
 
-    // Set up periodic refresh
-    const interval = setInterval(() => {
-      sendMessage({ type: 'GET_METRICS' });
-    }, 30000);
+    setMetrics({
+      totalMessages: calculatedMetrics.totalInteractions,
+      activeAgents: agents.length,
+      storageUsed: 0, // This would come from your storage service
+      messageRate: interactionData[interactionData.length - 1]?.interactions || 0,
+      userSatisfaction: calculatedMetrics.userSatisfaction,
+      successRate: calculatedMetrics.successRate
+    });
 
-    return () => clearInterval(interval);
-  }, [sendMessage]);
+    // Request real-time updates
+    sendMessage({ type: 'SUBSCRIBE_METRICS' });
+
+    return () => {
+      sendMessage({ type: 'UNSUBSCRIBE_METRICS' });
+    };
+  }, [agents, sendMessage]);
 
   useEffect(() => {
     if (lastMessage) {
       try {
         const data = JSON.parse(lastMessage);
         if (data.type === 'METRICS_UPDATE') {
-          setMetrics(data.metrics);
+          setMetrics(prevMetrics => ({
+            ...prevMetrics,
+            ...data.metrics
+          }));
         }
       } catch (error) {
         console.error('Error parsing metrics:', error);
@@ -62,23 +79,24 @@ export function AnalyticsDashboard() {
           status={metrics.activeAgents > 0 ? 'online' : 'offline'}
         />
 
-        <StorageUsage
-          used={metrics.storageUsed}
-          total={metrics.storageLimit}
-          icon={<Database className="w-6 h-6 text-purple-500" />}
+        <UsageMetric
+          title="Success Rate"
+          value={`${Math.round(metrics.successRate)}%`}
+          icon={<Activity className="w-6 h-6 text-emerald-500" />}
+          trend={metrics.successRate >= 90 ? 'up' : 'down'}
+          status={metrics.successRate >= 90 ? 'healthy' : 'warning'}
         />
 
-        <UsageMetric
-          title="System Status"
-          value="Operational"
-          icon={<Activity className="w-6 h-6 text-emerald-500" />}
-          status="healthy"
+        <StorageUsage
+          used={metrics.storageUsed}
+          total={1000000} // 1GB in KB
+          icon={<Database className="w-6 h-6 text-purple-500" />}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AgentStatus />
-        <MessageStats />
+        <AgentStatus agents={agents} />
+        <MessageStats agents={agents} />
       </div>
     </div>
   );
