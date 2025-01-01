@@ -25,14 +25,17 @@ export const getDefaultTrainingExamples = (agent: Agent): TrainingExample[] => [
   }
 ];
 
-export const formatTrainingExamples = (agent: Agent): string => {
+export const formatTrainingExamples = (agent: Agent, trainingExamples: TrainingExample[]): string => {
+  // Merge default training examples with provided ones
   const defaultExamples = getDefaultTrainingExamples(agent);
-  const allExamples = [...defaultExamples, ...(agent.trainingExamples || [])];
-  
+  const allExamples = [...defaultExamples, ...trainingExamples];
+
+  // Format the examples for the system prompt
   const formattedExamples = allExamples.map(ex => 
     `User: ${ex.input}\nAssistant: ${ex.output}`
   ).join('\n\n');
 
+  // Construct the full system prompt
   return `
 ${agent.systemPrompt}
 
@@ -51,3 +54,4 @@ ${formattedExamples}
 Remember to always maintain this identity and follow the behavior rules in all interactions.
 `;
 };
+

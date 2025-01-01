@@ -4,6 +4,7 @@ export interface User {
   name: string;
   role: 'user' | 'admin';
   createdAt: Date;
+  updatedAt: Date;
   agentCount: number;
   lastLogin: Date;
   emailVerified: boolean;
@@ -15,6 +16,9 @@ export interface User {
     state?: string;
     country?: string;
     postalCode?: string;
+  };
+  subscription?: {
+    planId: string;
   };
   bio?: string;
 }

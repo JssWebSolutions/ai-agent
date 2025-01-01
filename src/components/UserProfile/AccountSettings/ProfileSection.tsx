@@ -1,5 +1,5 @@
 import{ useRef, useState } from 'react';
-import { User, Upload, X } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { uploadProfileImage } from '../../../services/storage/profileImage';

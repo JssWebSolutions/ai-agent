@@ -30,7 +30,7 @@ export const agentConverter: FirestoreDataConverter<Agent> = {
           ...int,
           timestamp: int.timestamp instanceof Date
             ? Timestamp.fromDate(int.timestamp)
-            : Timestamp.fromDate(new Date(int.timestamp))
+            : int.timestamp ? Timestamp.fromDate(new Date(int.timestamp)) : Timestamp.now()
         }))
       },
       updatedAt: Timestamp.now(),
@@ -55,6 +55,6 @@ export const agentConverter: FirestoreDataConverter<Agent> = {
       },
       createdAt: data.createdAt?.toDate(),
       updatedAt: data.updatedAt?.toDate()
-    } as Agent;
+    } as unknown as Agent;
   }
 };

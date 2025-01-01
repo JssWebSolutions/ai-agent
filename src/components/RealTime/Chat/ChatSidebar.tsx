@@ -8,7 +8,7 @@ interface ChatSidebarProps {
   onSelectChat: (chatId: string) => void;
 }
 
-export function ChatSidebar({ activeUsers, selectedChat, onSelectChat }: ChatSidebarProps) {
+export function ChatSidebar({ selectedChat, onSelectChat }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const chats = [

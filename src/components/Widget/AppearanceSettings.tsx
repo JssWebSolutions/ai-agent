@@ -1,7 +1,6 @@
 
 import { Paintbrush } from 'lucide-react';
 import { Agent } from '../../types/agent';
-import { FormField } from '../Form/FormField';
 
 interface AppearanceSettingsProps {
   agent: Agent;
@@ -35,7 +34,7 @@ export function AppearanceSettings({ agent, onChange }: AppearanceSettingsProps)
       customColors: {
         ...agent.widgetSettings.customColors,
         [key]: value
-      }
+      } as { primary: string; background: string; text: string }
     });
   };
 

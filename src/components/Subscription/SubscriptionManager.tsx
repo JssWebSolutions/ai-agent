@@ -16,7 +16,7 @@ export function SubscriptionManager({ selectedPlan, isOpen, onClose, onSuccess }
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handlePaymentSuccess = async (transactionId: string) => {
+  const handlePaymentSuccess = async () => {
     if (!user || !selectedPlan) return;
 
     try {

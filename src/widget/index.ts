@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.voiceAIConfig.customColors = null;
     }
   }
+  
 
   const widget = new Widget();
   container.appendChild(widget);

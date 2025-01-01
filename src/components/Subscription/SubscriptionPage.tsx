@@ -16,7 +16,7 @@ export function SubscriptionPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { initiatePayment } = usePayment();
+  const { handlePayment } = usePayment();
   const [currentPlan, setCurrentPlan] = useState<Plan>(PLANS.free);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,7 +68,7 @@ export function SubscriptionPage() {
     if (!selectedPlan) return;
 
     try {
-      await initiatePayment(selectedPlan, user?.id);
+      await handlePayment(selectedPlan, { card: user?.id });
       setCurrentPlan(selectedPlan);
       toast({
         title: 'Success',

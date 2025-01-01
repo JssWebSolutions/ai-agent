@@ -3,16 +3,22 @@ import { auth, actionCodeSettings } from '../../config/firebase';
 import { AuthError } from './errors';
 
 export async function sendPasswordReset(email: string): Promise<void> {
+  // Define the password reset URL
+  const passwordResetUrl = `${window.location.origin}/auth/reset-password`;
+
   try {
+    // Construct the settings object for the password reset email
     const settings = {
       ...actionCodeSettings,
-      url: auth.config.passwordResetURL
+      url: passwordResetUrl // Use the manually defined URL here
     };
 
+    // Send the password reset email
     await sendPasswordResetEmail(auth, email, settings);
   } catch (error: any) {
     console.error('Error sending password reset email:', error);
     
+    // Handle different error codes from Firebase Authentication
     if (error.code === 'auth/unauthorized-continue-uri') {
       throw new AuthError(
         'Unable to send password reset email. Please try again later.',
@@ -32,6 +38,7 @@ export async function sendPasswordReset(email: string): Promise<void> {
       );
     }
     
+    // Fallback error handling
     throw new AuthError(
       'Failed to send password reset email. Please try again.',
       error.code || 'auth/unknown'

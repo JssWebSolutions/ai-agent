@@ -12,6 +12,9 @@ export async function getChatResponse(message: string, agent: Agent) {
 }
 
 async function getOpenAIResponse(message: string, agent: Agent) {
+  if (!agent.apiKeys?.openai) {
+    throw new Error('OpenAI API key is missing');
+  }
   const openai = new OpenAI({
     apiKey: agent.apiKeys.openai,
     dangerouslyAllowBrowser: true
@@ -45,11 +48,16 @@ async function getOpenAIResponse(message: string, agent: Agent) {
 }
 
 async function getGeminiResponse(message: string, agent: Agent) {
+  if (!agent.apiKeys?.gemini) {
+    throw new Error('Gemini API key is missing');
+  }
   const genAI = new GoogleGenerativeAI(agent.apiKeys.gemini);
   const model = genAI.getGenerativeModel({ model: agent.model });
 
-  const trainingExamples = getDefaultTrainingExamples(agent);
-  const systemPrompt = formatTrainingExamples(agent, trainingExamples);
+const trainingExamples = getDefaultTrainingExamples(agent) || [];
+const systemPrompt = formatTrainingExamples(agent, trainingExamples);  // Pass both arguments
+
+
   
   try {
     const prompt = `${systemPrompt}\n\nUser: ${message}\nAssistant:`;

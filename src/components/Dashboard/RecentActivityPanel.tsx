@@ -31,23 +31,29 @@ export function RecentActivityPanel() {
       id: agent.id,
       agentName: agent.name,
       agentImage: agent.image,
-      messages: agent.analytics.interactions.map(interaction => ({
+      messages: (agent.analytics.interactions || []).map(interaction => ({
         id: interaction.id || Math.random().toString(),
-        text: interaction.query,
+        text: interaction.query || "No query provided", // Handle missing query
         sender: 'user' as const,
-        timestamp: interaction.timestamp || new Date(),
+        timestamp: interaction.timestamp ? new Date(interaction.timestamp) : new Date(), // Fallback to current date
         response: {
           id: Math.random().toString(),
-          text: interaction.response,
+          text: interaction.response || "No response provided", // Handle missing response
           sender: 'agent' as const,
-          timestamp: new Date(interaction.timestamp?.getTime() + 1000 || Date.now())
+          timestamp: interaction.timestamp 
+            ? new Date(new Date(interaction.timestamp).getTime() + 1000)
+            : new Date(Date.now() + 1000) // Fallback with an offset
         }
       })).flat(),
-      lastActive: agent.analytics.interactions[0]?.timestamp || new Date()
+      lastActive: agent.analytics.interactions?.[0]?.timestamp
+        ? new Date(agent.analytics.interactions[0].timestamp)
+        : new Date() // Fallback to current date if no interactions exist
     }));
-
+  
+    // Assuming you have a setter for conversations
     setConversations(newConversations);
   }, [agents]);
+  
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">

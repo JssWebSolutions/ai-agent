@@ -15,7 +15,7 @@ export function PricingTable({
   currentPlan,
   billingInterval = 'monthly'
 }: PricingTableProps) {
-  const { user } = useAuth();
+  useAuth();
   const plans = Object.values(PLANS);
 
   return (

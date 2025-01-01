@@ -45,7 +45,10 @@ export function AnalyticsTab() {
         responseTimeData={analytics.responseTimeData}
       />
 
-      <InteractionsList interactions={analytics.recentInteractions} />
+      <InteractionsList interactions={analytics.recentInteractions.map(interaction => ({
+        ...interaction,
+        conversationId: interaction.conversationId || 'default-conversation-id'
+      }))} />
     </div>
   );
 }
