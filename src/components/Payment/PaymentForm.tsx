@@ -37,7 +37,6 @@ export function PaymentForm({ plan, clientSecret, onSuccess, onCancel }: Payment
       if (error) throw error;
 
       const result = await processPayment(clientSecret, {
-        type: 'card',
         card: paymentMethod!.card!
       });
 

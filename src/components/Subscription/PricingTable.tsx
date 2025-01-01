@@ -1,11 +1,11 @@
 
-import { Check, X } from 'lucide-react';
-import { Plan, PlanTier } from '../../types/subscription';
+import { Check } from 'lucide-react';
+import { Plan } from '../../types/subscription';
 import { PLANS } from '../../services/subscription/plans';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface PricingTableProps {
-  onSelectPlan: (plan: Plan) => void;
+  onSelectPlan: (plan: Plan) => void; 
   currentPlan?: Plan;
   billingInterval?: 'monthly' | 'annual';
 }

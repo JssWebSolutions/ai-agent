@@ -27,6 +27,16 @@ export interface TrainingExample {
   category: string;
 }
 
+export interface Interaction {
+  id?: string;
+  conversationId?: string;
+  query: string;
+  response: string;
+  timestamp?: Date;
+  responseTime: number;
+  successful: boolean;
+}
+
 export interface Agent {
   id: string;
   userId: string;
@@ -48,14 +58,6 @@ export interface Agent {
   widgetSettings: WidgetSettings;
   trainingExamples: TrainingExample[];
   analytics: {
-    interactions: Array<{
-      id: string;
-      conversationId: string;
-      query: string;
-      response: string;
-      timestamp: Date;
-      responseTime: number;
-      successful: boolean;
-    }>;
+    interactions: Interaction[];
   };
 }

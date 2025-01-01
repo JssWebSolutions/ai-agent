@@ -1,5 +1,5 @@
 import{ useState } from 'react';
-import { CreditCard, PaypalIcon } from 'lucide-react';
+import { CreditCard, Wallet} from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
@@ -73,7 +73,7 @@ function PaymentForm({ onSubmit }: PaymentMethodFormProps) {
               : 'border-gray-200'
           }`}
         >
-          <PaypalIcon className="w-6 h-6 mx-auto mb-2" />
+          <Wallet className="w-6 h-6 mx-auto mb-2" />
           <span className="block text-sm font-medium">PayPal</span>
         </button>
       </div>

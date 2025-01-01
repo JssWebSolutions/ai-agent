@@ -15,22 +15,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 2000,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html'),
-        widget: path.resolve(__dirname, 'src/widget/index.ts')
+        main: path.resolve(__dirname, 'index.html')
       },
       output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name]-[hash].js',
-        assetFileNames: '[name]-[hash][extname]',
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('react')) return 'vendor-react';
-            if (id.includes('firebase')) return 'vendor-firebase';
-            if (id.includes('@radix-ui')) return 'vendor-radix';
-            if (id.includes('lucide-react')) return 'vendor-lucide';
-            return 'vendor';
-          }
-        }
+        entryFileNames: '[name].[hash].js',
+        chunkFileNames: '[name].[hash].js',
+        assetFileNames: '[name].[hash][extname]'
       }
     }
   },

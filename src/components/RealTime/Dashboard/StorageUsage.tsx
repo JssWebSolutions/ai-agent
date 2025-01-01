@@ -1,6 +1,3 @@
-
-import { Database } from 'lucide-react';
-
 interface StorageUsageProps {
   used: number;
   total: number;

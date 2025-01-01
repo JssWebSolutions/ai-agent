@@ -10,13 +10,15 @@ import {
   serverTimestamp,
   getDoc,
   arrayUnion,
-  Timestamp
+  Timestamp,
+  FieldValue
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { Agent } from '../../types/agent';
 import { COLLECTIONS } from '../database/collections';
 import { agentConverter } from './converters';
 import { updateUserAgentCount } from '../auth/userService';
+
 
 /**
  * Fetches all agents for a specific user. If no agents exist, it creates a default agent.
@@ -46,6 +48,14 @@ export async function getUserAgents(userId: string): Promise<Agent[]> {
   }
 }
 
+
+export interface FirestoreAgent extends Agent {
+  createdAt?: FieldValue;
+  updatedAt?: FieldValue;
+}
+
+
+
 /**
  * Creates a new agent document in Firestore.
  * @param agent - The agent data to create.
@@ -56,9 +66,10 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
     const agentsRef = collection(db, COLLECTIONS.AGENTS).withConverter(agentConverter);
     const docRef = await addDoc(agentsRef, {
       ...agent,
+      image: agent.image ?? null, // Replace undefined with null
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
+      updatedAt: serverTimestamp(),
+    } as FirestoreAgent);
     
     // Update user's agent count
     await updateUserAgentCount(agent.userId, 1);
@@ -69,6 +80,7 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
     throw new Error('Failed to create agent');
   }
 }
+
 
 /**
  * Updates an existing agent document in Firestore.
@@ -180,7 +192,7 @@ export function getDefaultAgent(userId: string): Omit<Agent, 'id'> {
       speed: 1,
       accent: 'neutral'
     },
-    responseStyle: 'conversational',
+    responseStyle: 'detailed',
     interactionMode: 'informative',
     behaviorRules: [
       'Always be helpful and friendly',
