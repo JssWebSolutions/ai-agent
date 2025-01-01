@@ -17,7 +17,6 @@ interface Conversation {
   agentImage?: string;
   messages: Message[];
   lastActive: Date;
-  isTyping?: boolean;
 }
 
 export function RecentActivityPanel() {
@@ -27,33 +26,65 @@ export function RecentActivityPanel() {
 
   useEffect(() => {
     // Transform agent interactions into conversations
-    const newConversations = agents.map(agent => ({
-      id: agent.id,
-      agentName: agent.name,
-      agentImage: agent.image,
-      messages: (agent.analytics.interactions || []).map(interaction => ({
-        id: interaction.id || Math.random().toString(),
-        text: interaction.query || "No query provided", // Handle missing query
-        sender: 'user' as const,
-        timestamp: interaction.timestamp ? new Date(interaction.timestamp) : new Date(), // Fallback to current date
-        response: {
-          id: Math.random().toString(),
-          text: interaction.response || "No response provided", // Handle missing response
-          sender: 'agent' as const,
-          timestamp: interaction.timestamp 
-            ? new Date(new Date(interaction.timestamp).getTime() + 1000)
-            : new Date(Date.now() + 1000) // Fallback with an offset
+    const newConversations = agents.reduce((acc: Conversation[], agent) => {
+      const agentInteractions = agent.analytics.interactions || [];
+      
+      // Group interactions by conversation ID
+      const conversationGroups = agentInteractions.reduce((groups: Record<string, any[]>, interaction) => {
+        const conversationId = interaction.conversationId || 'default';
+        if (!groups[conversationId]) {
+          groups[conversationId] = [];
         }
-      })).flat(),
-      lastActive: agent.analytics.interactions?.[0]?.timestamp
-        ? new Date(agent.analytics.interactions[0].timestamp)
-        : new Date() // Fallback to current date if no interactions exist
-    }));
-  
-    // Assuming you have a setter for conversations
+        groups[conversationId].push(interaction);
+        return groups;
+      }, {});
+
+      // Convert each group into a conversation
+      Object.entries(conversationGroups).forEach(([conversationId, interactions]) => {
+        const messages: Message[] = interactions.flatMap(interaction => [
+          {
+            id: `${interaction.id}-query`,
+            text: interaction.query,
+            sender: 'user',
+            timestamp: new Date(interaction.timestamp)
+          },
+          {
+            id: `${interaction.id}-response`,
+            text: interaction.response,
+            sender: 'agent',
+            timestamp: new Date(interaction.timestamp)
+          }
+        ]);
+
+        // Sort messages by timestamp
+        messages.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+        acc.push({
+          id: conversationId,
+          agentName: agent.name,
+          agentImage: agent.image,
+          messages,
+          lastActive: new Date(Math.max(...messages.map(m => m.timestamp.getTime())))
+        });
+      });
+
+      return acc;
+    }, []);
+
+    // Sort conversations by last active timestamp
+    newConversations.sort((a, b) => b.lastActive.getTime() - a.lastActive.getTime());
     setConversations(newConversations);
   }, [agents]);
-  
+
+  if (conversations.length === 0) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
+        <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+        <p>No recent conversations yet.</p>
+        <p className="text-sm mt-2">Start chatting with your agents to see activity here.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -82,9 +113,6 @@ export function RecentActivityPanel() {
                         <MessageSquare className="w-5 h-5 text-blue-600" />
                       </div>
                     )}
-                    {conversation.isTyping && (
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-                    )}
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">{conversation.agentName}</h3>
@@ -109,7 +137,7 @@ export function RecentActivityPanel() {
 
             {expandedId === conversation.id && (
               <div className="px-4 pb-4 space-y-4">
-                {conversation.messages.slice(0, 3).map(message => (
+                {conversation.messages.slice(0, 6).map(message => (
                   <div 
                     key={message.id}
                     className={cn(
