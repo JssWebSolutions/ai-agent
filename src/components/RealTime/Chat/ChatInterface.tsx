@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Send, Paperclip, Image as ImageIcon, MoreVertical, Phone, Video, Info } from 'lucide-react';
 import { useWebSocket } from '../../../hooks/useWebSocket';
 import { ChatMessage } from './ChatMessage';
-import { UserPresence } from './UserPresence';
 import { TypingIndicator } from './TypingIndicator';
 import { ChatSidebar } from './ChatSidebar';
 import { cn } from '../../../utils/cn';

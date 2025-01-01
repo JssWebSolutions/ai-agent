@@ -23,10 +23,10 @@ export function ModernLandingPage() {
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
               <a href="#testimonials" className="text-gray-600 hover:text-gray-900">Testimonials</a>
-              <a href="/pricing" className="text-gray-600 hover:text-gray-900">Pricing</a>
+              <a href="/plans" className="text-gray-600 hover:text-gray-900">Pricing</a>
               {isAuthenticated ? (
                 <button
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/user')}
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Dashboard
