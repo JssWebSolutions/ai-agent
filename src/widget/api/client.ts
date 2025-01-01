@@ -1,6 +1,6 @@
 import { WidgetConfig, AgentInfo } from '../types';
 
-const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://default.api.url';
+const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://stirring-salmiakki-b11c50.netlify.app';
 
 export class WidgetApiClient {
   private readonly agentId: string;

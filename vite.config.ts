@@ -12,13 +12,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
-    chunkSizeWarningLimit: 2000,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html')
+        main: path.resolve(__dirname, 'index.html'),
+        widget: path.resolve(__dirname, 'src/widget/index.ts')
       },
       output: {
-        entryFileNames: '[name].[hash].js',
+        entryFileNames: (chunkInfo) => {
+          return chunkInfo.name === 'widget' ? 'widget.js' : '[name].[hash].js';
+        },
         chunkFileNames: '[name].[hash].js',
         assetFileNames: '[name].[hash][extname]'
       }

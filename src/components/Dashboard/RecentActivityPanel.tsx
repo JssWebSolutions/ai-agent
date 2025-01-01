@@ -2,125 +2,129 @@ import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAgentStore } from '../../store/agentStore';
 import { cn } from '../../utils/cn';
-import { Interaction } from '../../types/agent';
+import { MessageSquare, MoreVertical, Phone, Video } from 'lucide-react';
 
-interface ConversationWithAgent extends Interaction {
-  agentName: string;
+interface Message {
+  id: string;
+  text: string;
+  sender: 'user' | 'agent';
+  timestamp: Date;
 }
 
-interface GroupedConversation {
+interface Conversation {
   id: string;
-  interactions: ConversationWithAgent[];
-  lastMessage: Date;
   agentName: string;
+  agentImage?: string;
+  messages: Message[];
+  lastActive: Date;
+  isTyping?: boolean;
 }
 
 export function RecentActivityPanel() {
-  const [conversations, setConversations] = useState<GroupedConversation[]>([]);
-  const [expandedConversationId, setExpandedConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const { agents } = useAgentStore();
 
   useEffect(() => {
-    const fetchConversations = () => {
-      // Collect all interactions with agent names
-      const allInteractions: ConversationWithAgent[] = agents.flatMap(agent => 
-        (agent.analytics?.interactions || []).map(interaction => ({
-          ...interaction,
-          agentName: agent.name || 'Unnamed Agent'
-        }))
-      );
-
-      // Group interactions by conversation ID
-      const groupedConversations = allInteractions.reduce<GroupedConversation[]>((acc, interaction) => {
-        if (!interaction.conversationId) return acc;
-
-        const existingConversation = acc.find(c => c.id === interaction.conversationId);
-        if (existingConversation) {
-          existingConversation.interactions.push(interaction);
-          if ((interaction.timestamp ?? 0) > existingConversation.lastMessage) {
-            existingConversation.lastMessage = interaction.timestamp ?? new Date();
-          }
-        } else {
-          acc.push({
-            id: interaction.conversationId,
-            interactions: [interaction],
-            lastMessage: interaction.timestamp ?? new Date(),
-            agentName: interaction.agentName
-          });
+    // Transform agent interactions into conversations
+    const newConversations = agents.map(agent => ({
+      id: agent.id,
+      agentName: agent.name,
+      agentImage: agent.image,
+      messages: agent.analytics.interactions.map(interaction => ({
+        id: interaction.id || Math.random().toString(),
+        text: interaction.query,
+        sender: 'user' as const,
+        timestamp: interaction.timestamp || new Date(),
+        response: {
+          id: Math.random().toString(),
+          text: interaction.response,
+          sender: 'agent' as const,
+          timestamp: new Date(interaction.timestamp?.getTime() + 1000 || Date.now())
         }
-        return acc;
-      }, []);
+      })).flat(),
+      lastActive: agent.analytics.interactions[0]?.timestamp || new Date()
+    }));
 
-      // Sort conversations by most recent message
-      groupedConversations.sort((a, b) => b.lastMessage.getTime() - a.lastMessage.getTime());
-      
-      // Take only the 5 most recent conversations
-      setConversations(groupedConversations.slice(0, 5));
-    };
-
-    fetchConversations();
+    setConversations(newConversations);
   }, [agents]);
 
-  const toggleAccordion = (conversationId: string) => {
-    setExpandedConversationId(prev => prev === conversationId ? null : conversationId);
-  };
-
-  if (!conversations?.length) {
-    return (
-      <div className={cn(
-        "bg-white p-6 rounded-lg shadow-lg border border-gray-200",
-        "space-y-6 w-full mx-auto"
-      )}>
-        <h3 className="text-2xl font-semibold text-gray-800">Recent Activity</h3>
-        <p className="text-center text-gray-500">No recent activity available.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className={cn(
-      "bg-white p-6 rounded-lg shadow-lg border border-gray-200",
-      "space-y-6 w-full mx-auto"
-    )}>
-      <h3 className="text-2xl font-semibold text-gray-800">Recent Activity</h3>
-      <div className="space-y-6">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="p-4 border-b border-gray-100">
+        <h2 className="text-xl font-semibold">Recent Activity</h2>
+      </div>
+
+      <div className="divide-y divide-gray-100">
         {conversations.map(conversation => (
-          <div key={conversation.id} className="p-4 bg-gray-50 rounded-lg shadow-sm">
-            <div
-              className="flex justify-between items-center mb-2 cursor-pointer"
-              onClick={() => toggleAccordion(conversation.id)}
+          <div key={conversation.id} className="hover:bg-gray-50 transition-colors">
+            <div 
+              className="p-4 cursor-pointer"
+              onClick={() => setExpandedId(expandedId === conversation.id ? null : conversation.id)}
             >
-              <h4 className="text-lg font-semibold text-gray-800">
-                Conversation with {conversation.agentName}
-              </h4>
-              <span className="text-sm text-gray-500">
-                {formatDistanceToNow(conversation.lastMessage, { addSuffix: true })}
-              </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    {conversation.agentImage ? (
+                      <img 
+                        src={conversation.agentImage} 
+                        alt={conversation.agentName}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <MessageSquare className="w-5 h-5 text-blue-600" />
+                      </div>
+                    )}
+                    {conversation.isTyping && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">{conversation.agentName}</h3>
+                    <p className="text-sm text-gray-500">
+                      {formatDistanceToNow(conversation.lastActive, { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="p-2 hover:bg-gray-100 rounded-full">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                  </button>
+                  <button className="p-2 hover:bg-gray-100 rounded-full">
+                    <Video className="w-4 h-4 text-gray-500" />
+                  </button>
+                  <button className="p-2 hover:bg-gray-100 rounded-full">
+                    <MoreVertical className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+              </div>
             </div>
-            
-            {expandedConversationId === conversation.id && (
-              <ul className="space-y-3">
-                {conversation.interactions.slice(0, 3).map(interaction => (
-                  <li key={interaction.id} className="p-3 bg-white rounded-md shadow border border-gray-300">
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-medium text-gray-800">{interaction.query}</span>
-                        <span className="text-sm text-gray-500">
-                          {interaction.timestamp ? formatDistanceToNow(interaction.timestamp, { addSuffix: true }) : 'Unknown time'}
-                        </span>
-                      </div>
-                      <div className="bg-gray-100 p-3 rounded-md border border-gray-300">
-                        <p className="text-gray-700">{interaction.response}</p>
-                      </div>
+
+            {expandedId === conversation.id && (
+              <div className="px-4 pb-4 space-y-4">
+                {conversation.messages.slice(0, 3).map(message => (
+                  <div 
+                    key={message.id}
+                    className={cn(
+                      "flex gap-3",
+                      message.sender === 'user' ? 'justify-end' : 'justify-start'
+                    )}
+                  >
+                    <div className={cn(
+                      "max-w-[80%] rounded-lg p-3",
+                      message.sender === 'user' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-100 text-gray-900'
+                    )}>
+                      <p>{message.text}</p>
+                      <span className="text-xs opacity-75 mt-1 block">
+                        {formatDistanceToNow(message.timestamp, { addSuffix: true })}
+                      </span>
                     </div>
-                  </li>
+                  </div>
                 ))}
-                {conversation.interactions.length > 3 && (
-                  <li className="text-center text-sm text-gray-500">
-                    + {conversation.interactions.length - 3} more messages
-                  </li>
-                )}
-              </ul>
+              </div>
             )}
           </div>
         ))}

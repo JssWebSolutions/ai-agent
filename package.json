@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:widget": "vite build --config vite.widget.config.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -42,7 +43,7 @@
   "devDependencies": {
     "@types/node": "^20.11.24",
     "@types/react": "^18.2.55",
-    "@types/react-dom": "^18.2.19",
+    "@types/react-dom": "^18.2.19", 
     "@types/use-sync-external-store": "^0.0.6",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
