@@ -1,6 +1,6 @@
 import { WidgetConfig, AgentInfo } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://default.api.url';
+const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://default.api.url';
 
 export class WidgetApiClient {
   private readonly agentId: string;
