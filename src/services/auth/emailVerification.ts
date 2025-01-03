@@ -2,7 +2,7 @@ import {
   sendEmailVerification as firebaseSendEmailVerification,
   User as FirebaseUser,
 } from 'firebase/auth';
-import { auth, actionCodeSettings } from '../../config/firebase';
+import { actionCodeSettings } from '../../config/firebase';
 import { AuthError } from './errors';
 
 let lastEmailSentTimestamp = 0;
