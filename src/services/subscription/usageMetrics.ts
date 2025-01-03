@@ -10,7 +10,7 @@ export async function getUsageStats(userId: string): Promise<Usage | null> {
     
     if (!usageDoc.exists()) {
       const defaultUsage = createDefaultUsage(userId);
-      await updateDoc(usageRef, defaultUsage);
+      await updateDoc(usageRef, { ...defaultUsage });
       return defaultUsage;
     }
 

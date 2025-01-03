@@ -31,7 +31,7 @@ export interface TrainingExample {
 
 export interface Interaction {
   id?: string;
-  conversationId?: string;
+  conversationId: string;
   query: string;
   response: string;
   timestamp?: Date;

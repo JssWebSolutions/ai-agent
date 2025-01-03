@@ -22,14 +22,14 @@ interface Conversation {
 export function RecentActivityPanel() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showAllMessages, setShowAllMessages] = useState<Record<string, boolean>>({});
+  const [showAllConversations, setShowAllConversations] = useState(false);
   const { agents } = useAgentStore();
 
   useEffect(() => {
-    // Transform agent interactions into conversations
     const newConversations = agents.reduce((acc: Conversation[], agent) => {
       const agentInteractions = agent.analytics.interactions || [];
-      
-      // Group interactions by conversation ID
+
       const conversationGroups = agentInteractions.reduce((groups: Record<string, any[]>, interaction) => {
         const conversationId = interaction.conversationId || 'default';
         if (!groups[conversationId]) {
@@ -39,24 +39,22 @@ export function RecentActivityPanel() {
         return groups;
       }, {});
 
-      // Convert each group into a conversation
       Object.entries(conversationGroups).forEach(([conversationId, interactions]) => {
         const messages: Message[] = interactions.flatMap(interaction => [
           {
             id: `${interaction.id}-query`,
             text: interaction.query,
             sender: 'user',
-            timestamp: new Date(interaction.timestamp)
+            timestamp: new Date(interaction.timestamp),
           },
           {
             id: `${interaction.id}-response`,
             text: interaction.response,
             sender: 'agent',
-            timestamp: new Date(interaction.timestamp)
-          }
+            timestamp: new Date(interaction.timestamp),
+          },
         ]);
 
-        // Sort messages by timestamp
         messages.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
         acc.push({
@@ -64,14 +62,13 @@ export function RecentActivityPanel() {
           agentName: agent.name,
           agentImage: agent.image,
           messages,
-          lastActive: new Date(Math.max(...messages.map(m => m.timestamp.getTime())))
+          lastActive: new Date(Math.max(...messages.map(m => m.timestamp.getTime()))),
         });
       });
 
       return acc;
     }, []);
 
-    // Sort conversations by last active timestamp
     newConversations.sort((a, b) => b.lastActive.getTime() - a.lastActive.getTime());
     setConversations(newConversations);
   }, [agents]);
@@ -86,6 +83,8 @@ export function RecentActivityPanel() {
     );
   }
 
+  const visibleConversations = showAllConversations ? conversations : conversations.slice(0, 5);
+
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="p-4 border-b border-gray-100">
@@ -93,9 +92,9 @@ export function RecentActivityPanel() {
       </div>
 
       <div className="divide-y divide-gray-100">
-        {conversations.map(conversation => (
+        {visibleConversations.map(conversation => (
           <div key={conversation.id} className="hover:bg-gray-50 transition-colors">
-            <div 
+            <div
               className="p-4 cursor-pointer"
               onClick={() => setExpandedId(expandedId === conversation.id ? null : conversation.id)}
             >
@@ -103,8 +102,8 @@ export function RecentActivityPanel() {
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     {conversation.agentImage ? (
-                      <img 
-                        src={conversation.agentImage} 
+                      <img
+                        src={conversation.agentImage}
                         alt={conversation.agentName}
                         className="w-10 h-10 rounded-full object-cover"
                       />
@@ -137,20 +136,25 @@ export function RecentActivityPanel() {
 
             {expandedId === conversation.id && (
               <div className="px-4 pb-4 space-y-4">
-                {conversation.messages.slice(0, 6).map(message => (
-                  <div 
+                {(showAllMessages[conversation.id]
+                  ? conversation.messages
+                  : conversation.messages.slice(0, 5)
+                ).map(message => (
+                  <div
                     key={message.id}
                     className={cn(
-                      "flex gap-3",
+                      'flex gap-3',
                       message.sender === 'user' ? 'justify-end' : 'justify-start'
                     )}
                   >
-                    <div className={cn(
-                      "max-w-[80%] rounded-lg p-3",
-                      message.sender === 'user' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-100 text-gray-900'
-                    )}>
+                    <div
+                      className={cn(
+                        'max-w-[80%] rounded-lg p-3',
+                        message.sender === 'user'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-900'
+                      )}
+                    >
                       <p>{message.text}</p>
                       <span className="text-xs opacity-75 mt-1 block">
                         {formatDistanceToNow(message.timestamp, { addSuffix: true })}
@@ -158,11 +162,35 @@ export function RecentActivityPanel() {
                     </div>
                   </div>
                 ))}
+                {conversation.messages.length > 5 && (
+                  <button
+                    className="text-sm text-blue-600 hover:underline"
+                    onClick={() =>
+                      setShowAllMessages(prev => ({
+                        ...prev,
+                        [conversation.id]: !prev[conversation.id],
+                      }))
+                    }
+                  >
+                    {showAllMessages[conversation.id] ? 'Show Less' : 'Show All'}
+                  </button>
+                )}
               </div>
             )}
           </div>
         ))}
       </div>
+
+      {conversations.length > 5 && (
+        <div className="p-4 text-center">
+          <button
+            className="text-blue-600 hover:underline text-sm"
+            onClick={() => setShowAllConversations(!showAllConversations)}
+          >
+            {showAllConversations ? 'Show Less Conversations' : 'Show All Conversations'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

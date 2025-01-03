@@ -17,7 +17,9 @@ interface AgentStore {
   deleteAgent: (agentId: string) => Promise<void>;
   addTrainingExample: (agentId: string, example: { input: string; output: string; category: string }) => Promise<void>;
   removeTrainingExample: (agentId: string, index: number) => Promise<void>;
-  addInteraction: (agentId: string, interaction: { query: string; response: string; responseTime: number; successful: boolean }) => Promise<void>;
+  addInteraction: (agentId: string, interaction: {
+    conversationId: string; query: string; response: string; responseTime: number; successful: boolean;  
+}) => Promise<void>;
 }
 
 export const useAgentStore = create<AgentStore>((set, get) => ({
@@ -159,7 +161,10 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   addInteraction: async (agentId, interaction) => {
     set({ isLoading: true, error: null });
     try {
-      await FirestoreService.addInteraction(agentId, interaction);
+      await FirestoreService.addInteraction(agentId, {
+        ...interaction,
+        conversationId: interaction.conversationId || "default-conversation-id"
+      });
       set(state => {
         const updatedAgents = state.agents.map(agent =>
           agent.id === agentId
@@ -170,8 +175,8 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
                   interactions: [
                     {
                       id: `interaction-${Date.now()}`,
-                      conversationId: interaction.conversationId || "default-conversation-id",
                       ...interaction,
+                      conversationId: interaction.conversationId || "default-conversation-id",
                       timestamp: new Date(),
                     },
                     ...(agent.analytics.interactions || []),

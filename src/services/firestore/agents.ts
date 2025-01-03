@@ -154,6 +154,7 @@ export async function addInteraction(
     response: string; 
     responseTime: number; 
     successful: boolean; 
+	conversationId: string;
   }
 ): Promise<void> {
   try {
