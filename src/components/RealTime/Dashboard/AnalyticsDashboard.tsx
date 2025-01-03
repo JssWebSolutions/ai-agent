@@ -19,7 +19,7 @@ export function AnalyticsDashboard() {
     successRate: 0
   });
 
-  const { lastMessage, sendMessage } = useWebSocket('wss://your-websocket-url/analytics');
+  const { lastMessage, sendMessage } = useWebSocket('/analytics');
 
   useEffect(() => {
     // Calculate metrics from actual agent data

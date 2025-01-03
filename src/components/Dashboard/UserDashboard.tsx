@@ -36,14 +36,15 @@ export function UserDashboard() {
     if (!user?.id) return;
     setIsLoading(true);
     try {
-      await createNewAgent(user.id);
-      console.log('Agent created successfully!');
+      const newAgent = await createNewAgent(user.id); // Get the newly created agent
+      navigate(`/agent/${newAgent.id}`);  // Redirect to the new agent's page
     } catch (error) {
       console.error('Error creating agent:', error);
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   // Loading state
   if (isLoading) {

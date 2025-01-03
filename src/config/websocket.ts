@@ -11,7 +11,7 @@ export const WS_CONFIG: {
   // Use secure WebSocket when on HTTPS, regular WebSocket for HTTP
   BASE_URL: typeof window !== 'undefined' && window.location.protocol === 'https:'
     ? `wss://${window.location.host}`
-    : `ws://${typeof window !== 'undefined' && window.location.host}`,
+    : `wss://${typeof window !== 'undefined' && window.location.host}`,
   ENDPOINTS: {
     ANALYTICS: '/ws/analytics',
     CHAT: '/ws/chat'

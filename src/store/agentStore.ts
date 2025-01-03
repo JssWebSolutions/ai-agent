@@ -12,12 +12,13 @@ interface AgentStore {
   addAgent: (agent: Omit<Agent, 'id'>) => Promise<void>;
   updateAgent: (agent: Agent) => Promise<void>;
   selectAgent: (agentId: string) => void;
-  createNewAgent: (userId: string) => Promise<void>;
+  createNewAgent: (userId: string) => Promise<Agent>; // Updated return type
   deleteAgent: (agentId: string) => Promise<void>;
   addTrainingExample: (agentId: string, example: { input: string; output: string; category: string }) => Promise<void>;
   removeTrainingExample: (agentId: string, index: number) => Promise<void>;
   addInteraction: (agentId: string, interaction: { query: string; response: string; responseTime: number; successful: boolean }) => Promise<void>;
 }
+
 
 export const useAgentStore = create<AgentStore>((set, get) => ({
   agents: [],
@@ -90,15 +91,17 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const agentData = { ...defaultAgent, userId };
-      const id = await FirestoreService.createAgent(agentData);
-      const newAgent = { ...agentData, id };
+      const id = await FirestoreService.createAgent(agentData); // Create agent and get the ID
+      const newAgent = { ...agentData, id }; // Add the ID to the agent data
       set(state => ({
-        agents: [...state.agents, newAgent],
-        selectedAgent: newAgent,
-        error: null
+        agents: [...state.agents, newAgent], // Add new agent to the list
+        selectedAgent: newAgent, // Set the new agent as the selected one
+        error: null,
       }));
+      return newAgent; // Return the created agent
     } catch (error: any) {
       set({ error: error.message || 'Failed to create new agent' });
+      throw error; // Re-throw the error to handle it in the caller
     } finally {
       set({ isLoading: false });
     }

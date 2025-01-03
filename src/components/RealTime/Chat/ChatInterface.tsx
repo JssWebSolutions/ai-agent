@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
+import { Bot } from "lucide-react";
 import { useAgentStore } from '../../../store/agentStore';
 import { useSpeechRecognition } from '../../../hooks/useSpeechRecognition';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { TypingIndicator } from './TypingIndicator';
-import { cn } from '../../../utils/cn';
 
 interface Message {
   id: string;

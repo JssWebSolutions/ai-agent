@@ -1,5 +1,5 @@
 
-import { Key } from 'lucide-react';
+import { Rocket } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { APIKeysSection } from './APIKeysSection';
 
@@ -10,10 +10,10 @@ export function APISettings() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold flex items-center gap-2">
-        <Key className="w-6 h-6" />
-        API Keys
-      </h2>
+      <h5 className="font-bold flex items-center gap-2">
+        <Rocket className="w-6 h-6" />
+        More Setting Comming Soon
+      </h5>
 
       <div className="grid grid-cols-1 gap-6">
         <APIKeysSection />
