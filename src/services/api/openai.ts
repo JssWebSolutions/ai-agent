@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { Agent } from '../../types/agent';
-import { formatTrainingExamples } from '../trainingData';
+import { formatTrainingExamples, getDefaultTrainingExamples } from '../trainingData';
 
 export async function getOpenAIResponse(message: string, agent: Agent) {
   if (!agent.apiKeys?.openai) {
@@ -13,7 +13,11 @@ export async function getOpenAIResponse(message: string, agent: Agent) {
   });
 
   try {
-    const systemPrompt = formatTrainingExamples(agent);
+    // Get the default training examples if no additional ones are provided
+    const trainingExamples = getDefaultTrainingExamples(agent);
+
+    // Pass both agent and trainingExamples
+    const systemPrompt = formatTrainingExamples(agent, trainingExamples);
 
     const response = await openai.chat.completions.create({
       model: agent.model,

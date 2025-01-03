@@ -92,7 +92,7 @@ export function WidgetConfigurator() {
 
       {isSaving && (
         <FloatingSaveButton
-          onSave={() => {}}
+          onSave={async () => {}}
           hasChanges={false}
           isLoading={true}
         />

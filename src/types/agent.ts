@@ -1,3 +1,5 @@
+import { FieldValue } from "firebase/firestore";
+
 export interface VoiceSettings {
   gender: 'male' | 'female';
   pitch: number;
@@ -38,7 +40,6 @@ export interface Interaction {
 }
 
 export interface Agent {
-  createdAt: any;
   id: string;
   userId: string;
   name: string;
@@ -61,4 +62,6 @@ export interface Agent {
   analytics: {
     interactions: Interaction[];
   };
+  createdAt?: FieldValue;
+  updatedAt?: FieldValue;
 }

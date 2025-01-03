@@ -13,6 +13,7 @@ interface Interaction {
   content: string;
   timestamp: Date;
   duration: number;
+  conversationId: string;
 }
 
 export function WidgetInteractions({ filter }: { filter: any }) {

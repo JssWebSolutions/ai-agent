@@ -5,6 +5,7 @@ import { Agent } from '../../types/agent';
 interface AppearanceSettingsProps {
   agent: Agent;
   onChange: (settings: Agent['widgetSettings']) => void;
+  disabled: boolean;
 }
 
 export function AppearanceSettings({ agent, onChange }: AppearanceSettingsProps) {

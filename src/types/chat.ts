@@ -47,4 +47,5 @@ export interface Interaction {
   content: string;
   timestamp: Date;
   duration: number;
+  conversationId: string;
 }

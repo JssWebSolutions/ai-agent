@@ -24,7 +24,7 @@ export function AnalyticsDashboard() {
   useEffect(() => {
     // Calculate metrics from actual agent data
     const calculatedMetrics = calculateMetrics(agents);
-    const { interactionData, responseTimeData } = calculateChartData(agents);
+    const { interactionData } = calculateChartData(agents);
 
     setMetrics({
       totalMessages: calculatedMetrics.totalInteractions,

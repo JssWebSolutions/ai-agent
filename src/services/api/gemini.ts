@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Agent } from '../../types/agent';
-import { formatTrainingExamples } from '../trainingData';
+import { formatTrainingExamples, getDefaultTrainingExamples } from '../trainingData';
 
 export async function getGeminiResponse(message: string, agent: Agent) {
   if (!agent.apiKeys?.gemini) {
@@ -11,7 +11,11 @@ export async function getGeminiResponse(message: string, agent: Agent) {
   const model = genAI.getGenerativeModel({ model: agent.model });
 
   try {
-    const systemPrompt = formatTrainingExamples(agent);
+    // Get the default training examples if no additional ones are provided
+    const trainingExamples = getDefaultTrainingExamples(agent);
+
+    // Pass both agent and trainingExamples
+    const systemPrompt = formatTrainingExamples(agent, trainingExamples);
     const prompt = `${systemPrompt}\n\nUser: ${message}\nAssistant:`;
     
     const result = await model.generateContent(prompt);

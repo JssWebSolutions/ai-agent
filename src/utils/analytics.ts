@@ -39,7 +39,7 @@ export function calculateChartData(agents: Agent[]) {
 
   agents.forEach(agent => {
     agent.analytics?.interactions?.forEach(interaction => {
-      const date = new Date(interaction.timestamp).toLocaleDateString();
+      const date = interaction.timestamp ? new Date(interaction.timestamp).toLocaleDateString() : 'Invalid Date';
       
       // Interactions count
       dailyInteractions[date] = (dailyInteractions[date] || 0) + 1;

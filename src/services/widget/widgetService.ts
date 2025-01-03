@@ -1,5 +1,5 @@
 import { db } from '../../config/firebase';
-import { doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { doc, updateDoc, Timestamp, collection, addDoc } from 'firebase/firestore';
 import { Agent } from '../../types/agent';
 
 export interface WidgetInteraction {
@@ -41,5 +41,25 @@ export async function updateWidgetSettings(
   } catch (error) {
     console.error('Error updating widget settings:', error);
     throw new Error('Failed to update widget settings');
+  }
+}
+
+// Function to save a widget interaction
+export async function saveWidgetInteraction(
+  agentId: string, 
+  interaction: Omit<WidgetInteraction, 'id' | 'timestamp'>
+): Promise<void> {
+  try {
+    const interactionsRef = collection(db, 'agents', agentId, 'interactions');
+    
+    // Add the interaction with timestamp and generate a unique ID
+    await addDoc(interactionsRef, {
+      ...interaction,
+      timestamp: Timestamp.now(),
+      id: Date.now().toString()  // You could use a better unique ID generation strategy here
+    });
+  } catch (error) {
+    console.error('Error saving widget interaction:', error);
+    throw new Error('Failed to save widget interaction');
   }
 }
