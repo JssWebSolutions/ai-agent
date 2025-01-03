@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { Agent, Interaction } from '../types/agent';
+import { Agent } from '../types/agent';
 import defaultAgent from '../components/Agent/DefaultAgent';
 import * as FirestoreService from '../services/firestore/agents';
+import { canCreateAgent } from '../services/subscription/usage';
 
 interface AgentStore {
   agents: Agent[];
@@ -12,13 +13,12 @@ interface AgentStore {
   addAgent: (agent: Omit<Agent, 'id'>) => Promise<void>;
   updateAgent: (agent: Agent) => Promise<void>;
   selectAgent: (agentId: string) => void;
-  createNewAgent: (userId: string) => Promise<Agent>; // Updated return type
+  createNewAgent: (userId: string) => Promise<Agent>;
   deleteAgent: (agentId: string) => Promise<void>;
   addTrainingExample: (agentId: string, example: { input: string; output: string; category: string }) => Promise<void>;
   removeTrainingExample: (agentId: string, index: number) => Promise<void>;
   addInteraction: (agentId: string, interaction: { query: string; response: string; responseTime: number; successful: boolean }) => Promise<void>;
 }
-
 
 export const useAgentStore = create<AgentStore>((set, get) => ({
   agents: [],
@@ -36,7 +36,6 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
         error: null 
       });
     } catch (error: any) {
-      console.error('Error loading agents:', error);
       set({ 
         error: error.message || 'Failed to load agents',
         agents: [],
@@ -86,22 +85,29 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       set({ isLoading: false });
     }
   },
-  
+
   createNewAgent: async (userId: string) => {
     set({ isLoading: true, error: null });
     try {
+      const canCreate = await canCreateAgent(userId);
+      if (!canCreate) {
+        throw new Error('You have reached the maximum number of agents allowed for your plan');
+      }
+
       const agentData = { ...defaultAgent, userId };
-      const id = await FirestoreService.createAgent(agentData); // Create agent and get the ID
-      const newAgent = { ...agentData, id }; // Add the ID to the agent data
+      const id = await FirestoreService.createAgent(agentData);
+      const newAgent = { ...agentData, id };
+      
       set(state => ({
-        agents: [...state.agents, newAgent], // Add new agent to the list
-        selectedAgent: newAgent, // Set the new agent as the selected one
+        agents: [...state.agents, newAgent],
+        selectedAgent: newAgent,
         error: null,
       }));
-      return newAgent; // Return the created agent
+      
+      return newAgent;
     } catch (error: any) {
       set({ error: error.message || 'Failed to create new agent' });
-      throw error; // Re-throw the error to handle it in the caller
+      throw error;
     } finally {
       set({ isLoading: false });
     }
@@ -150,13 +156,12 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     await get().updateAgent(updatedAgent);
   },
 
-  addInteraction: async (agentId: string, interaction: Interaction) => {
+  addInteraction: async (agentId, interaction) => {
     set({ isLoading: true, error: null });
     try {
       await FirestoreService.addInteraction(agentId, interaction);
-  
-      set((state) => {
-        const updatedAgents = state.agents.map((agent) =>
+      set(state => {
+        const updatedAgents = state.agents.map(agent =>
           agent.id === agentId
             ? {
                 ...agent,
@@ -175,7 +180,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
               }
             : agent
         );
-  
+
         return {
           agents: updatedAgents,
           selectedAgent:
@@ -189,8 +194,5 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
-  }    
-  
-
-
+  }
 }));

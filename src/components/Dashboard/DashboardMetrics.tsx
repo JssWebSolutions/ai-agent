@@ -1,23 +1,46 @@
-
+// Update the metrics display in DashboardMetrics.tsx
+import { useEffect, useState } from 'react';
 import { Bot, Users, Activity, Clock } from 'lucide-react';
 import { Agent } from '../../types/agent';
 import { cn } from '../../utils/cn';
 import { calculateMetrics } from '../../utils/analytics';
+import { getUsageStats } from '../../services/subscription/usage';
+import { useAuth } from '../../contexts/AuthContext';
+import { PLANS } from '../../services/subscription/plans';
 
 interface DashboardMetricsProps {
   agents: Agent[];
 }
 
 export function DashboardMetrics({ agents }: DashboardMetricsProps) {
+  const { user } = useAuth();
+  const [usageStats, setUsageStats] = useState<any>(null);
   const metrics = calculateMetrics(agents);
+
+  useEffect(() => {
+    const loadUsage = async () => {
+      if (user?.id) {
+        const stats = await getUsageStats(user.id);
+        setUsageStats(stats);
+      }
+    };
+    loadUsage();
+  }, [user?.id]);
+
+  const planId = user?.subscription?.planId || 'plan_free';
+  const plan = Object.values(PLANS).find(p => p.id === planId);
+  const messageLimit = plan?.limits.messagesPerMonth || 0;
+  const agentLimit = plan?.limits.agentsPerAccount || 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div className={cn("dashboard-card", "group")}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="dashboard-label">Total Agents</p>
-            <p className="dashboard-stat">{agents.length}</p>
+            <p className="dashboard-label">Messages Used</p>
+            <p className="dashboard-stat">
+              {usageStats?.metrics.totalMessages || 0} / {messageLimit === Infinity ? '∞' : messageLimit}
+            </p>
           </div>
           <div className="dashboard-icon bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
             <Bot className="w-6 h-6 text-blue-500" />
@@ -28,8 +51,10 @@ export function DashboardMetrics({ agents }: DashboardMetricsProps) {
       <div className={cn("dashboard-card", "group")}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="dashboard-label">Total Interactions</p>
-            <p className="dashboard-stat">{metrics.totalInteractions}</p>
+            <p className="dashboard-label">Active Agents</p>
+            <p className="dashboard-stat">
+              {agents.length} / {agentLimit === Infinity ? '∞' : agentLimit}
+            </p>
           </div>
           <div className="dashboard-icon bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
             <Users className="w-6 h-6 text-green-500" />
@@ -52,8 +77,8 @@ export function DashboardMetrics({ agents }: DashboardMetricsProps) {
       <div className={cn("dashboard-card", "group")}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="dashboard-label">User Satisfaction</p>
-            <p className="dashboard-stat">{Math.round(metrics.userSatisfaction)}%</p>
+            <p className="dashboard-label">Success Rate</p>
+            <p className="dashboard-stat">{Math.round(metrics.successRate)}%</p>
           </div>
           <div className="dashboard-icon bg-yellow-50 rounded-lg group-hover:bg-yellow-100 transition-colors">
             <Activity className="w-6 h-6 text-yellow-500" />
