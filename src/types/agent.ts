@@ -38,6 +38,7 @@ export interface Interaction {
 }
 
 export interface Agent {
+  createdAt: any;
   id: string;
   userId: string;
   name: string;

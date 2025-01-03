@@ -8,7 +8,7 @@ import { useToast } from '../../contexts/ToastContext';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-interface PaymentModalProps {
+export interface PaymentModalProps {
   plan: Plan;
   isOpen: boolean;
   onClose: () => void;

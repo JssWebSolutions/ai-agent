@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:widget": "vite build --config vite.widget.config.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "start": "vite preview"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@eslint/config-array": "^0.19.0",
@@ -27,8 +28,8 @@
     "glob": "^11.0.0",
     "lucide-react": "^0.469.0",
     "openai": "^4.28.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-router-dom": "^7.0.2",
     "recharts": "^2.7.4",
     "rimraf": "^6.0.1",
@@ -42,7 +43,7 @@
   "devDependencies": {
     "@types/node": "^20.11.24",
     "@types/react": "^18.2.55",
-    "@types/react-dom": "^18.2.19",
+    "@types/react-dom": "^18.2.19", 
     "@types/use-sync-external-store": "^0.0.6",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.0.2",

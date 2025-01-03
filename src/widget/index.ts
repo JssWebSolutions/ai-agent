@@ -1,19 +1,24 @@
 import { Widget } from './components/Widget';
-import { WidgetConfig } from './types';
-
-declare global {
-  interface Window {
-    voiceAIConfig?: WidgetConfig;
-  }
-}
 
 // Initialize widget when the script loads
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('ai-agent-widget');
-  if (container && window.voiceAIConfig) {
-    const widget = new Widget();
-    container.appendChild(widget);
-  } else {
+  if (!container || !window.voiceAIConfig) {
     console.error('Widget container not found or configuration missing');
+    return;
   }
+
+  // Parse customColors if it's a string
+  if (typeof window.voiceAIConfig.customColors === 'string') {
+    try {
+      window.voiceAIConfig.customColors = JSON.parse(window.voiceAIConfig.customColors);
+    } catch (e) {
+      console.error('Failed to parse customColors:', e);
+      window.voiceAIConfig.customColors = null;
+    }
+  }
+  
+
+  const widget = new Widget();
+  container.appendChild(widget);
 });

@@ -1,6 +1,6 @@
 // AI Agent Widget Implementation
 (function() {
-  const WIDGET_URL = 'https://wondrous-melba-0abe63.netlify.app';
+  const WIDGET_URL = 'https://stirring-salmiakki-b11c50.netlify.app';
   
   class AIAgentWidget {
     constructor(config) {

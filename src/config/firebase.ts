@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { initializeFirestore, persistentLocalCache } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getAuth, sendPasswordResetEmail as firebaseSendPasswordResetEmail } from 'firebase/auth';
 import { env } from './env';
 
 // Initialize Firebase App
@@ -25,14 +25,20 @@ export const auth = getAuth(app);
 // Configure Auth settings
 auth.useDeviceLanguage();
 
-// Initialize Firebase Authentication action handlers
-const actionCodeSettings = {
+// Define action code settings for password reset and email verification
+export const actionCodeSettings = {
   url: window.location.origin,
   handleCodeInApp: true
 };
 
-auth.config.authDomain = window.location.hostname;
-auth.config.passwordResetURL = `${window.location.origin}/auth/reset-password`;
-auth.config.verifyEmailURL = `${window.location.origin}/auth/verify-email`;
+// Function to send a password reset email
+export const sendPasswordResetEmail = (email: string): Promise<void> => {
+  const passwordResetUrl = `${window.location.origin}/auth/reset-password`;
 
-export { actionCodeSettings };
+  return firebaseSendPasswordResetEmail(auth, email, {
+    url: passwordResetUrl
+  });
+};
+
+// Additional URL settings for email verification
+export const verifyEmailURL = `${window.location.origin}/auth/verify-email`;

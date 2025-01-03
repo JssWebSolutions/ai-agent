@@ -15,7 +15,7 @@ export function WidgetConfigurator() {
   if (!selectedAgent) return null;
 
   // Dynamically construct the script src URL
-  const scriptSrc = `${import.meta.env.REACT_APP_API_BASE_URL}/widget.js`;
+  const scriptSrc = `${import.meta.env.VITE_API_BASE_URL}/widget.js`;
 
   const widgetCode = `<!-- AI Agent Widget -->
 <div id="ai-agent-widget"></div>

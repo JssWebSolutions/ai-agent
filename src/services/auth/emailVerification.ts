@@ -11,7 +11,7 @@ const RATE_LIMIT_DURATION = 60000; // 1 minute
 export async function sendVerificationEmail(user: FirebaseUser): Promise<void> {
   const now = Date.now();
   const timeElapsed = now - lastEmailSentTimestamp;
-
+  const verifyEmailURL = `${window.location.origin}/auth/verify-email`;
   // Check if the rate limit has been exceeded
   if (timeElapsed < RATE_LIMIT_DURATION) {
     const remainingSeconds = Math.ceil(
@@ -26,7 +26,7 @@ export async function sendVerificationEmail(user: FirebaseUser): Promise<void> {
   try {
     const settings = {
       ...actionCodeSettings,
-      url: auth.config.verifyEmailURL,
+      url: verifyEmailURL,
     };
 
     // Send the verification email using Firebase
