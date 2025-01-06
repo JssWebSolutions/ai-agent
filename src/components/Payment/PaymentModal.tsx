@@ -13,6 +13,7 @@ export interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (transactionId: string) => void;
+  onPaymentSuccess: () => Promise<void>;
 }
 
 export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalProps) {

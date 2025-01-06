@@ -169,8 +169,9 @@ export function SubscriptionPage() {
         <PaymentModal
           plan={selectedPlan}
           onClose={() => setIsPaymentModalOpen(false)}
-          onPaymentSuccess={handlePaymentSuccess}
-        />
+          onPaymentSuccess={handlePaymentSuccess} isOpen={false} onSuccess={function (_transactionId: string): void {
+            throw new Error('Function not implemented.');
+          } }        />
       )}
     </div>
   );

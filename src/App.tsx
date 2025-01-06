@@ -15,6 +15,8 @@ import { PlanSelector } from './components/Subscription/Plans/PlanSelector';
 import { AnalyticsDashboard } from './components/RealTime/Dashboard/AnalyticsDashboard';
 import { ChatInterface } from './components/RealTime/Chat/ChatInterface';
 
+
+
 interface PrivateRouteProps {
   children: React.ReactNode;
 }
@@ -39,6 +41,7 @@ export default function App() {
   const handleToggleAuthMode = () => {
     setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
   };
+  
 
   return (
     <Routes>

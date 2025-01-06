@@ -30,11 +30,11 @@ export interface TrainingExample {
 }
 
 export interface Interaction {
-  id?: string;
+  id: string;
   conversationId: string;
   query: string;
   response: string;
-  timestamp?: Date;
+  timestamp: Date;
   responseTime: number;
   successful: boolean;
 }

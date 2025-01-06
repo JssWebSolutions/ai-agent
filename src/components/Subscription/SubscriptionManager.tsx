@@ -43,7 +43,8 @@ export function SubscriptionManager({ selectedPlan, isOpen, onClose, onSuccess }
       plan={selectedPlan}
       isOpen={isOpen}
       onClose={onClose}
-      onSuccess={handlePaymentSuccess}
-    />
+      onSuccess={handlePaymentSuccess} onPaymentSuccess={function (): Promise<void> {
+        throw new Error('Function not implemented.');
+      } }    />
   );
 }

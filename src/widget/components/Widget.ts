@@ -123,13 +123,13 @@ export class Widget extends HTMLElement {
     this.addMessage(text, 'user');
     try {
       const { response } = await this.client.sendMessage(text);
-      this.addMessage(response, 'bot');
+      this.addMessage(response, 'agent');
     } catch (error) {
-      this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+      this.addMessage('Sorry, I encountered an error. Please try again.', 'agent');
     }
   }
 
-  private addMessage(text: string, sender: 'user' | 'bot') {
+  private addMessage(text: string, sender: 'user' | 'agent') {
     const messagesContainer = this.shadowRoot?.querySelector('#messages');
     if (messagesContainer) {
       const bubble = document.createElement('chat-bubble');

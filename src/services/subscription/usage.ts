@@ -25,7 +25,7 @@ export async function getUsageStats(userId: string): Promise<Usage | null> {
         notifications: []
       };
       
-      await updateDoc(usageRef, defaultUsage);
+      await updateDoc(usageRef, { ...defaultUsage });
       return defaultUsage;
     }
 

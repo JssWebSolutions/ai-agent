@@ -20,8 +20,8 @@ export async function getAPIKeys(): Promise<APIKeys | null> {
     
     const data = docSnap.data();
     return {
-      openai: data.openai ? decrypt(data.openai) : undefined,
-      gemini: data.gemini ? decrypt(data.gemini) : undefined,
+      openai: data.openai ? await decrypt(data.openai) : undefined,
+      gemini: data.gemini ? await decrypt(data.gemini) : undefined,
       updatedAt: data.updatedAt.toDate(),
       updatedBy: data.updatedBy
     };

@@ -39,7 +39,8 @@ export async function signUpWithEmail(email: string, password: string, name: str
       createdAt: new Date(),
       agentCount: 0,
       lastLogin: new Date(),
-      emailVerified: false
+      emailVerified: false,
+      updatedAt: new Date()
     };
 
     await createUserDocument(firebaseUser.uid, userData);
@@ -71,7 +72,8 @@ export async function signInWithEmail(email: string, password: string): Promise<
         createdAt: new Date(),
         agentCount: 0,
         lastLogin: new Date(),
-        emailVerified: firebaseUser.emailVerified
+        emailVerified: firebaseUser.emailVerified,
+        updatedAt: new Date()
       };
       await createUserDocument(firebaseUser.uid, newUserData);
       return { ...newUserData, id: firebaseUser.uid };

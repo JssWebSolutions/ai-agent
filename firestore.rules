@@ -6,25 +6,19 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
     function isAdmin() {
-      return request.auth != null && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Allow users to read their own documents
+    // Users collection
     match /users/{userId} {
-      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
 
-    // Allow users to read/write their own agents
+    // Agents collection
     match /agents/{agentId} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && (
@@ -34,19 +28,15 @@ service cloud.firestore {
       );
     }
 
-    // Allow users to read/write their own usage data
-    match /usage/{document} {
-      allow read: if isAuthenticated() && (
-        document == request.auth.uid || isAdmin()
-      );
+    // Settings collection (API keys etc)
+    match /settings/{document} {
+      allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
-    // Allow users to read their own subscription data
-    match /subscriptions/{subscriptionId} {
-      allow read: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid || isAdmin()
-      );
+    // Usage collection
+    match /usage/{document} {
+      allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
   }
