@@ -22,8 +22,11 @@ export async function uploadProfileImage(userId: string, file: File): Promise<st
     const snapshot = await uploadBytes(storageRef, file);
     const downloadUrl = await getDownloadURL(snapshot.ref);
     return downloadUrl;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error uploading profile image:', error);
+    if (error.code === 'storage/unauthorized') {
+      throw new Error('Permission denied to upload profile image. Please check your storage rules.');
+    }
     throw new Error('Failed to upload profile image');
   }
 }

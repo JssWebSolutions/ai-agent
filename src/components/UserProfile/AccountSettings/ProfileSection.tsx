@@ -23,10 +23,10 @@ export function ProfileSection() {
         description: 'Profile image updated successfully',
         type: 'success'
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to upload profile image',
+        description: error.message || 'Failed to upload profile image',
         type: 'error'
       });
     } finally {

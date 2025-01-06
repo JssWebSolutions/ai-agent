@@ -1,9 +1,16 @@
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { STRIPE_CONFIG } from './config';
 import { PaymentError } from './errors';
 import { Plan } from '../../types/subscription';
 
-const stripePromise = loadStripe(STRIPE_CONFIG.PUBLIC_KEY);
+let stripePromise: Promise<Stripe | null> | null = null;
+
+const getStripe = () => {
+  if (!stripePromise) {
+    stripePromise = loadStripe(STRIPE_CONFIG.PUBLIC_KEY);
+  }
+  return stripePromise;
+};
 
 export async function createPaymentIntent(plan: Plan): Promise<string> {
   if (!STRIPE_CONFIG.PUBLIC_KEY) {
@@ -59,7 +66,7 @@ export async function processPayment(
   paymentMethod: { card: any }
 ): Promise<{ success: boolean; transactionId?: string; error?: string }> {
   try {
-    const stripe = await stripePromise;
+    const stripe = await getStripe();
     if (!stripe) {
       throw new PaymentError(
         STRIPE_CONFIG.ERROR_MESSAGES.MISSING_KEY,
