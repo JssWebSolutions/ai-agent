@@ -2,21 +2,14 @@ import OpenAI from 'openai';
 import { Agent } from '../../types/agent';
 import { formatTrainingExamples, getDefaultTrainingExamples } from '../trainingData';
 
-export async function getOpenAIResponse(message: string, agent: Agent) {
-  if (!agent.apiKeys?.openai) {
-    throw new Error('OpenAI API key is required');
-  }
-
+export async function getOpenAIResponse(message: string, agent: Agent, apiKey: string) {
   const openai = new OpenAI({
-    apiKey: agent.apiKeys.openai,
+    apiKey,
     dangerouslyAllowBrowser: true
   });
 
   try {
-    // Get the default training examples if no additional ones are provided
     const trainingExamples = getDefaultTrainingExamples(agent);
-
-    // Pass both agent and trainingExamples
     const systemPrompt = formatTrainingExamples(agent, trainingExamples);
 
     const response = await openai.chat.completions.create({
@@ -39,7 +32,7 @@ export async function getOpenAIResponse(message: string, agent: Agent) {
   } catch (error: any) {
     console.error('OpenAI API error:', error);
     if (error.status === 401) {
-      throw new Error('Invalid OpenAI API key. Please check your API key in the Settings tab.');
+      throw new Error('Invalid OpenAI API key. Please contact an administrator.');
     }
     throw new Error(error.message);
   }

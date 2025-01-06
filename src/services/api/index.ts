@@ -1,18 +1,26 @@
-import { Agent } from '../../types/agent';
+import { getAPIKeys } from '../admin/apiKeys';
 import { getOpenAIResponse } from './openai';
 import { getGeminiResponse } from './gemini';
+import { Agent } from '../../types/agent';
 
 export async function getChatResponse(message: string, agent: Agent): Promise<string> {
   try {
-    if (!agent.apiKeys?.[agent.llmProvider]) {
-      throw new Error(`${agent.llmProvider === 'openai' ? 'OpenAI' : 'Gemini'} API key is required`);
+    const apiKeys = await getAPIKeys();
+    if (!apiKeys) {
+      throw new Error('API keys not configured. Please contact an administrator.');
     }
 
-    const response = await (agent.llmProvider === 'openai' 
-      ? getOpenAIResponse(message, agent)
-      : getGeminiResponse(message, agent));
-
-    return response;
+    if (agent.llmProvider === 'openai') {
+      if (!apiKeys.openai) {
+        throw new Error('OpenAI API key not configured. Please contact an administrator.');
+      }
+      return getOpenAIResponse(message, agent, apiKeys.openai);
+    } else {
+      if (!apiKeys.gemini) {
+        throw new Error('Gemini API key not configured. Please contact an administrator.');
+      }
+      return getGeminiResponse(message, agent, apiKeys.gemini);
+    }
   } catch (error: any) {
     console.error('API error:', error);
     throw new Error(error.message || 'Failed to get response from AI service');

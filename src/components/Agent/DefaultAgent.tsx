@@ -1,36 +1,34 @@
-
 import { Agent } from '../../types/agent';
 
 export const defaultAgent: Omit<Agent, 'id'> = {
-  userId: "", // This will be populated when creating a new agent
+  userId: "",
   name: "AI Assistant",
-  image: undefined, // Use undefined for optional fields
-  language: "en", // Default language
-  firstMessage: "Hello! How can I assist you today?", // Default initial message
-  systemPrompt: "You are a helpful assistant.", // Default system behavior
+  image: undefined,
+  language: "en",
+  firstMessage: "Hello! How can I assist you today?",
+  systemPrompt: "You are a helpful assistant.",
   voiceSettings: {
-    gender: "female", // Default voice settings
+    gender: "female",
     pitch: 1,
     speed: 1,
     accent: "neutral",
   },
-  responseStyle: "concise", // Default response style
-  interactionMode: "informative", // Default interaction mode
-  behaviorRules: [], // Default to no behavior rules
-  apiKeys: {}, // No API keys by default
-  llmProvider: "openai", // Default LLM provider
-  model: "gpt-3.5-turbo", // Default model
+  responseStyle: "concise",
+  interactionMode: "informative",
+  behaviorRules: [],
+  llmProvider: "openai",
+  model: "gpt-3.5-turbo",
   widgetSettings: {
-    theme: "light", // Default widget settings
+    theme: "light",
     position: "bottom-right",
     buttonSize: "medium",
     borderRadius: "medium",
     showAgentImage: true,
     customColors: null
   },
-  trainingExamples: [], // Default to no training examples
+  trainingExamples: [],
   analytics: {
-    interactions: [], // No interactions by default
+    interactions: [],
   },
 };
 
