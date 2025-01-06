@@ -5,6 +5,7 @@ import { UserList } from './UserList';
 import { Analytics } from './Analytics';
 import { User } from '../../types/auth';
 import { FirebaseConfigTab } from './FirebaseConfigTab';
+import { APIKeysSection } from './APIKeysSection';
 import { getAllUsers } from '../../services/firestore/users';
 import { useLoadingToast } from '../../hooks/useLoadingToast';
 
@@ -47,6 +48,10 @@ export function AdminDashboard() {
             <Database className="w-4 h-4" />
             Firebase Config
           </TabsTrigger>
+          <TabsTrigger value="api-keys" className="tab-trigger">
+            <Database className="w-4 h-4" />
+            API Keys
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -59,6 +64,10 @@ export function AdminDashboard() {
 
         <TabsContent value="firebase">
           <FirebaseConfigTab />
+        </TabsContent>
+
+        <TabsContent value="api-keys">
+          <APIKeysSection />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import{ useState, useEffect } from 'react';
 import { useAgentStore } from '../../store/agentStore';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../Button';
@@ -85,7 +85,3 @@ export function UserDashboard() {
     </div>
   );
 }
-function useState(_arg0: boolean): [any, any] {
-  throw new Error('Function not implemented.');
-}
-

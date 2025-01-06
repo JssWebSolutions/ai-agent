@@ -50,7 +50,7 @@ export function APIKeysSection() {
         description: 'API keys updated successfully',
         type: 'success'
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
         description: 'Failed to update API keys',
@@ -64,7 +64,7 @@ export function APIKeysSection() {
   return (
     <div className="space-y-6 bg-white p-6 rounded-lg shadow">
       <div className="flex items-center gap-2 mb-6">
-        <Key className="w-6 h-6 text-gray-600" />
+        <Key className="w-6 h-6 text-blue-500" />
         <h2 className="text-xl font-semibold">API Keys Configuration</h2>
       </div>
 
