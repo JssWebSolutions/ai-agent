@@ -1,32 +1,41 @@
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+// Browser-compatible encryption using Web Crypto API
+export async function encrypt(text: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  
+  const key = await window.crypto.subtle.generateKey(
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['encrypt']
+  );
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default-encryption-key-32-bytes-long';
-const ALGORITHM = 'aes-256-gcm';
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await window.crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    data
+  );
 
-export function encrypt(text: string): string {
-  const iv = randomBytes(16);
-  const cipher = createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY), iv);
-  
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  
-  const authTag = cipher.getAuthTag();
-  
-  // Return IV:AuthTag:EncryptedData format
-  return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
+  const encryptedArray = new Uint8Array(encrypted);
+  return `${btoa(String.fromCharCode(...iv))}:${btoa(String.fromCharCode(...encryptedArray))}`;
 }
 
-export function decrypt(encryptedData: string): string {
-  const [ivHex, authTagHex, encryptedText] = encryptedData.split(':');
-  
-  const iv = Buffer.from(ivHex, 'hex');
-  const authTag = Buffer.from(authTagHex, 'hex');
-  const decipher = createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY), iv);
-  
-  decipher.setAuthTag(authTag);
-  
-  let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  
-  return decrypted;
+export async function decrypt(encryptedData: string): Promise<string> {
+  const [ivString, dataString] = encryptedData.split(':');
+  const iv = new Uint8Array([...atob(ivString)].map(char => char.charCodeAt(0)));
+  const data = new Uint8Array([...atob(dataString)].map(char => char.charCodeAt(0)));
+
+  const key = await window.crypto.subtle.generateKey(
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['decrypt']
+  );
+
+  const decrypted = await window.crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    data
+  );
+
+  return new TextDecoder().decode(decrypted);
 }

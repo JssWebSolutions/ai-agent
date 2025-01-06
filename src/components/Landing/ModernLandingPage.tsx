@@ -1,4 +1,3 @@
-
 import { ArrowRight, Bot, CheckCircle, MessageSquare, Zap, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
