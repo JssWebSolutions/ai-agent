@@ -18,11 +18,12 @@ export default defineConfig({
         widget: path.resolve(__dirname, 'src/widget/index.ts')
       },
       output: {
+        format: 'es',
         entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === 'widget' ? 'widget.js' : '[name].[hash].js';
+          return chunkInfo.name === 'widget' ? 'widget.js' : 'assets/[name].[hash].js';
         },
-        chunkFileNames: '[name].[hash].js',
-        assetFileNames: '[name].[hash][extname]'
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash][extname]'
       }
     }
   },
