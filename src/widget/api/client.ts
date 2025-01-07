@@ -1,6 +1,6 @@
 import { WidgetConfig, AgentInfo } from '../types';
 
-const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://stirring-salmiakki-b11c50.netlify.app';
+const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://jss-ai-agent.netlify.app';
 
 export class WidgetApiClient {
   private readonly agentId: string;
