@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
-import { Users, Settings, Database } from 'lucide-react';
+import { Users, Settings, Database, CreditCard } from 'lucide-react';
 import { UserList } from './UserList';
 import { Analytics } from './Analytics';
 import { User } from '../../types/auth';
 import { FirebaseConfigTab } from './FirebaseConfigTab';
+import { PaymentGatewaysTab } from './PaymentGatewaysTab';
 import { APIKeysSection } from './APIKeysSection';
 import { getAllUsers } from '../../services/firestore/users';
 import { useLoadingToast } from '../../hooks/useLoadingToast';
@@ -52,6 +53,10 @@ export function AdminDashboard() {
             <Database className="w-4 h-4" />
             API Keys
           </TabsTrigger>
+          <TabsTrigger value="payment-gateway" className="tab-trigger">
+            <CreditCard className="w-4 h-4" />
+            Payment Gateway
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -68,6 +73,10 @@ export function AdminDashboard() {
 
         <TabsContent value="api-keys">
           <APIKeysSection />
+        </TabsContent>
+
+        <TabsContent value="payment-gateway">
+          <PaymentGatewaysTab />
         </TabsContent>
       </Tabs>
     </div>
