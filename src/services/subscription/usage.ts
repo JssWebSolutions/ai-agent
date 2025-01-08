@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { Usage } from '../../types/subscription';
 import { PLANS } from './plans';
@@ -25,7 +25,7 @@ export async function getUsageStats(userId: string): Promise<Usage | null> {
         notifications: []
       };
       
-      await updateDoc(usageRef, { ...defaultUsage });
+      await setDoc(usageRef, { ...defaultUsage });
       return defaultUsage;
     }
 
