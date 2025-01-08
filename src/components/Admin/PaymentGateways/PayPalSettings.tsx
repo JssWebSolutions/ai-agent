@@ -1,30 +1,48 @@
-import { useState } from 'react';
-
-interface PayPalSettings {
-  clientId: string;
-  clientSecret: string;
-  mode: 'sandbox' | 'live';
-  enabled: boolean;
-}
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Save } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
-import { updatePayPalSettings } from '../../../services/admin/paymentGateways';
+import { updatePaymentSettings } from '../../../services/admin/paymentGateways';
 
-export function PayPalSettings() {
-  const [settings, setSettings] = useState<PayPalSettings>({
+interface PayPalSettingsProps {
+  initialSettings?: {
+    clientId: string;
+    clientSecret: string;
+    mode: 'sandbox' | 'live';
+    enabled: boolean;
+  };
+  userId: string;
+}
+
+export function PayPalSettings({ initialSettings, userId }: PayPalSettingsProps) {
+  const [settings, setSettings] = useState<{
+    clientId: string;
+    clientSecret: string;
+    mode: 'sandbox' | 'live';
+    enabled: boolean;
+  }>({
     clientId: '',
     clientSecret: '',
     mode: 'sandbox',
-    enabled: false
+    enabled: false,
+    ...initialSettings
   });
   const [showSecrets, setShowSecrets] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (initialSettings) {
+      setSettings(initialSettings);
+    }
+  }, [initialSettings]);
+
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updatePayPalSettings(settings);
+      await updatePaymentSettings({
+        paypal: settings
+      }, userId);
+
       toast({
         title: 'Success',
         description: 'PayPal settings updated successfully',
@@ -54,6 +72,7 @@ export function PayPalSettings() {
               value={settings.clientId}
               onChange={(e) => setSettings({ ...settings, clientId: e.target.value })}
               className="block w-full pr-10 border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Client ID"
             />
             <button
               type="button"
@@ -79,20 +98,9 @@ export function PayPalSettings() {
               value={settings.clientSecret}
               onChange={(e) => setSettings({ ...settings, clientSecret: e.target.value })}
               className="block w-full pr-10 border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Client Secret"
             />
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Mode</label>
-          <select
-            value={settings.mode}
-            onChange={(e) => setSettings({ ...settings, mode: e.target.value as 'sandbox' | 'live' })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="sandbox">Sandbox (Testing)</option>
-            <option value="live">Live (Production)</option>
-          </select>
         </div>
 
         <div className="flex items-center justify-between">

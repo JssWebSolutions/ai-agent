@@ -1,12 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CreditCard, Landmark, Settings } from 'lucide-react';
 import { StripeSettings } from './PaymentGateways/StripeSettings';
 import { PayPalSettings } from './PaymentGateways/PayPalSettings';
 import { RazorpaySettings } from './PaymentGateways/RazorpaySettings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
+import { getPaymentSettings } from '../../services/admin/paymentGateways';
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 
 export function PaymentGatewaysTab() {
   const [activeTab, setActiveTab] = useState('stripe');
+  const [settings, setSettings] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const paymentSettings = await getPaymentSettings();
+        setSettings(paymentSettings || {});
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to load payment settings',
+          type: 'error'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, [toast]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -34,15 +68,24 @@ export function PaymentGatewaysTab() {
         </TabsList>
 
         <TabsContent value="stripe">
-          <StripeSettings />
+          <StripeSettings 
+            initialSettings={settings?.stripe}
+            userId={user?.id || ''}
+          />
         </TabsContent>
 
         <TabsContent value="paypal">
-          <PayPalSettings />
+          <PayPalSettings 
+            initialSettings={settings?.paypal}
+            userId={user?.id || ''}
+          />
         </TabsContent>
 
         <TabsContent value="razorpay">
-          <RazorpaySettings />
+          <RazorpaySettings 
+            initialSettings={settings?.razorpay}
+            userId={user?.id || ''}
+          />
         </TabsContent>
       </Tabs>
     </div>

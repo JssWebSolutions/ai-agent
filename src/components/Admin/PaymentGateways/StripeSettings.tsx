@@ -1,23 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Save } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
-import { updateStripeSettings } from '../../../services/admin/paymentGateways';
+import { updatePaymentSettings } from '../../../services/admin/paymentGateways';
 
-export function StripeSettings() {
+interface StripeSettingsProps {
+  initialSettings?: {
+    publishableKey: string;
+    secretKey: string;
+    webhookSecret: string;
+    enabled: boolean;
+  };
+  userId: string;
+}
+
+export function StripeSettings({ initialSettings, userId }: StripeSettingsProps) {
   const [settings, setSettings] = useState({
     publishableKey: '',
     secretKey: '',
     webhookSecret: '',
-    enabled: false
+    enabled: false,
+    ...initialSettings
   });
   const [showSecrets, setShowSecrets] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (initialSettings) {
+      setSettings(initialSettings);
+    }
+  }, [initialSettings]);
+
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateStripeSettings(settings);
+      await updatePaymentSettings({
+        stripe: settings
+      }, userId);
+      
       toast({
         title: 'Success',
         description: 'Stripe settings updated successfully',

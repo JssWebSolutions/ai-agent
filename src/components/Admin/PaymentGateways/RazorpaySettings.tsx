@@ -1,33 +1,53 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Save } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
-import { updateRazorpaySettings } from '../../../services/admin/paymentGateways';
+import { updatePaymentSettings } from '../../../services/admin/paymentGateways';
 
-export function RazorpaySettings() {
+interface RazorpaySettingsProps {
+  initialSettings?: {
+    keyId: string;
+    keySecret: string;
+    webhookSecret: string;
+    enabled: boolean;
+  };
+  userId: string;
+}
+
+export function RazorpaySettings({ initialSettings, userId }: RazorpaySettingsProps) {
   const [settings, setSettings] = useState({
     keyId: '',
     keySecret: '',
     webhookSecret: '',
-    enabled: false
+    enabled: false,
+    ...initialSettings,
   });
   const [showSecrets, setShowSecrets] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (initialSettings) {
+      setSettings(initialSettings);
+    }
+  }, [initialSettings]);
+
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateRazorpaySettings(settings);
+      await updatePaymentSettings({
+        razorpay: settings,
+      }, userId);
+
       toast({
         title: 'Success',
         description: 'Razorpay settings updated successfully',
-        type: 'success'
+        type: 'success',
       });
     } catch (error: any) {
       toast({
         title: 'Error',
         description: error.message || 'Failed to update Razorpay settings',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       setLoading(false);
@@ -43,7 +63,7 @@ export function RazorpaySettings() {
           </label>
           <div className="mt-1 relative rounded-md shadow-sm">
             <input
-              type={showSecrets ? "text" : "password"}
+              type={showSecrets ? 'text' : 'password'}
               value={settings.keyId}
               onChange={(e) => setSettings({ ...settings, keyId: e.target.value })}
               className="block w-full pr-10 border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -69,10 +89,11 @@ export function RazorpaySettings() {
           </label>
           <div className="mt-1 relative rounded-md shadow-sm">
             <input
-              type={showSecrets ? "text" : "password"}
+              type={showSecrets ? 'text' : 'password'}
               value={settings.keySecret}
               onChange={(e) => setSettings({ ...settings, keySecret: e.target.value })}
               className="block w-full pr-10 border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              placeholder="secret_..."
             />
           </div>
         </div>
@@ -83,10 +104,11 @@ export function RazorpaySettings() {
           </label>
           <div className="mt-1 relative rounded-md shadow-sm">
             <input
-              type={showSecrets ? "text" : "password"}
+              type={showSecrets ? 'text' : 'password'}
               value={settings.webhookSecret}
               onChange={(e) => setSettings({ ...settings, webhookSecret: e.target.value })}
               className="block w-full pr-10 border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              placeholder="whsec_..."
             />
           </div>
         </div>
