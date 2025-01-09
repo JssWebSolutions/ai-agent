@@ -14,6 +14,7 @@ import { ModernLandingPage } from './components/Landing/ModernLandingPage';
 import { PlanSelector } from './components/Subscription/Plans/PlanSelector';
 import { AnalyticsDashboard } from './components/RealTime/Dashboard/AnalyticsDashboard';
 import { ChatInterface } from './components/RealTime/Chat/ChatInterface';
+import { RecentActivityPanel } from './components/Dashboard/RecentActivityPanel';
 
 
 
@@ -48,6 +49,7 @@ export default function App() {
       {/* Public Routes */}
       <Route path="/" element={<ModernLandingPage />} />
       <Route path="/plans" element={<PlanSelector />} />
+      <Route path="/recent" element={<RecentActivityPanel />} />
       <Route path="/subscription" element={<SubscriptionPage />} />
       <Route path="/auth" element={<AuthForm mode={authMode} onToggleMode={handleToggleAuthMode} />} />
 

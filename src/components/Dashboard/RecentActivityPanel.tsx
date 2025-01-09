@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAgentStore } from '../../store/agentStore';
 import { cn } from '../../utils/cn';
-import { MessageSquare, MoreVertical, Phone, Video } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -22,8 +22,6 @@ interface Conversation {
 export function RecentActivityPanel() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showAllMessages, setShowAllMessages] = useState<Record<string, boolean>>({});
-  const [showAllConversations, setShowAllConversations] = useState(false);
   const { agents } = useAgentStore();
 
   useEffect(() => {
@@ -83,114 +81,85 @@ export function RecentActivityPanel() {
     );
   }
 
-  const visibleConversations = showAllConversations ? conversations : conversations.slice(0, 5);
-
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-      <div className="p-4 border-b border-gray-100">
-        <h2 className="text-xl font-semibold">Recent Activity</h2>
-      </div>
-
-      <div className="divide-y divide-gray-100">
-        {visibleConversations.map(conversation => (
-          <div key={conversation.id} className="hover:bg-gray-50 transition-colors">
+    <div className="grid grid-cols-3 bg-gray-50 h-full">
+      {/* Left Panel */}
+      <div className="col-span-1 bg-white shadow-sm overflow-auto max-h-[600px]">
+        <div className="p-4 border-b border-gray-100">
+          <h2 className="text-xl font-semibold">Agents</h2>
+        </div>
+        <div className="divide-y divide-gray-100">
+          {conversations.map(conversation => (
             <div
-              className="p-4 cursor-pointer"
+              key={conversation.id}
+              className={cn(
+                "hover:bg-gray-50 transition-colors p-4 cursor-pointer",
+                expandedId === conversation.id && "bg-blue-50"
+              )}
               onClick={() => setExpandedId(expandedId === conversation.id ? null : conversation.id)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    {conversation.agentImage ? (
-                      <img
-                        src={conversation.agentImage}
-                        alt={conversation.agentName}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <MessageSquare className="w-5 h-5 text-blue-600" />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">{conversation.agentName}</h3>
-                    <p className="text-sm text-gray-500">
-                      {formatDistanceToNow(conversation.lastActive, { addSuffix: true })}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  {conversation.agentImage ? (
+                    <img
+                      src={conversation.agentImage}
+                      alt={conversation.agentName}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <MessageSquare className="w-5 h-5 text-blue-600" />
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <button className="p-2 hover:bg-gray-100 rounded-full">
-                    <Phone className="w-4 h-4 text-gray-500" />
-                  </button>
-                  <button className="p-2 hover:bg-gray-100 rounded-full">
-                    <Video className="w-4 h-4 text-gray-500" />
-                  </button>
-                  <button className="p-2 hover:bg-gray-100 rounded-full">
-                    <MoreVertical className="w-4 h-4 text-gray-500" />
-                  </button>
+                <div>
+                  <h3 className="font-medium text-gray-900">{conversation.agentName}</h3>
+                  <p className="text-sm text-gray-500">
+                    {formatDistanceToNow(conversation.lastActive, { addSuffix: true })}
+                  </p>
                 </div>
               </div>
             </div>
-
-            {expandedId === conversation.id && (
-              <div className="px-4 pb-4 space-y-4">
-                {(showAllMessages[conversation.id]
-                  ? conversation.messages
-                  : conversation.messages.slice(0, 5)
-                ).map(message => (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      'flex gap-3',
-                      message.sender === 'user' ? 'justify-end' : 'justify-start'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'max-w-[80%] rounded-lg p-3',
-                        message.sender === 'user'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
-                      )}
-                    >
-                      <p>{message.text}</p>
-                      <span className="text-xs opacity-75 mt-1 block">
-                        {formatDistanceToNow(message.timestamp, { addSuffix: true })}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                {conversation.messages.length > 5 && (
-                  <button
-                    className="text-sm text-blue-600 hover:underline"
-                    onClick={() =>
-                      setShowAllMessages(prev => ({
-                        ...prev,
-                        [conversation.id]: !prev[conversation.id],
-                      }))
-                    }
-                  >
-                    {showAllMessages[conversation.id] ? 'Show Less' : 'Show All'}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {conversations.length > 5 && (
-        <div className="p-4 text-center">
-          <button
-            className="text-blue-600 hover:underline text-sm"
-            onClick={() => setShowAllConversations(!showAllConversations)}
-          >
-            {showAllConversations ? 'Show Less Conversations' : 'Show All Conversations'}
-          </button>
-        </div>
-      )}
+      {/* Right Panel */}
+      <div className="col-span-2 bg-white shadow-sm overflow-auto max-h-[600px]">
+        {expandedId ? (
+          <div className="p-6">
+            {conversations
+              .find(conversation => conversation.id === expandedId)
+              ?.messages.map(message => (
+                <div
+                  key={message.id}
+                  className={cn(
+                    'flex gap-3 mb-4',
+                    message.sender === 'user' ? 'justify-end' : 'justify-start'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'max-w-[80%] rounded-lg p-3',
+                      message.sender === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-900'
+                    )}
+                  >
+                    <p>{message.text}</p>
+                    <span className="text-xs opacity-75 mt-1 block">
+                      {formatDistanceToNow(message.timestamp, { addSuffix: true })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+          </div>
+        ) : (
+          <div className="p-6 text-gray-500 text-center">
+            <p>Select an agent to view messages.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
