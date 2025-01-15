@@ -17,6 +17,7 @@ export function ProfileSection() {
     setLoading(true);
     try {
       const imageUrl = await uploadProfileImage(user.id, file);
+      console.log('Uploaded image URL:', imageUrl);
       await updateUser({ profileImage: imageUrl });
       toast({
         title: 'Success',
@@ -50,7 +51,7 @@ export function ProfileSection() {
             ) : (
               <div className="relative group">
                 <img
-                  src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+                  src={user.profileImage ? encodeURIComponent(user.profileImage) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
                   alt={user.name}
                   className="w-24 h-24 rounded-full object-cover"
                 />
