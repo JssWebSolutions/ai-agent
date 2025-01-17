@@ -1,9 +1,10 @@
 import{ useState } from 'react';
 import { useAgentStore } from '../../store/agentStore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
-import { Volume2, MessageSquare } from 'lucide-react';
+import { Volume2, MessageSquare, Key } from 'lucide-react';
 import { VoiceSettings } from '../Settings/VoiceSettings';
 import { ResponseSettings } from '../Settings/ResponseSettings';
+import { APISettings } from '../Settings/APISettings';
 
 export function SettingsTab() {
   const { selectedAgent } = useAgentStore();
@@ -29,6 +30,10 @@ export function SettingsTab() {
             <MessageSquare className="w-4 h-4" />
             Response
           </TabsTrigger>
+          <TabsTrigger value="api" className="tab-trigger">
+            <Key className="w-4 h-4" />
+            API & Model
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="voice">
@@ -37,6 +42,10 @@ export function SettingsTab() {
 
         <TabsContent value="response">
           <ResponseSettings />
+        </TabsContent>
+
+        <TabsContent value="api">
+          <APISettings />
         </TabsContent>
       </Tabs>
     </div>

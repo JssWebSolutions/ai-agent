@@ -1,12 +1,7 @@
 export const COLLECTIONS = {
-  USERS: 'users',
   AGENTS: 'agents',
-  SETTINGS: 'settings',
-  USAGE: 'usage',
-  USER_COUNTS: 'userCounts',
+  INTERACTIONS: 'interactions'
 } as const;
-
-export type CollectionName = keyof typeof COLLECTIONS;
 
 export const SUBCOLLECTIONS = {
   ANALYTICS: 'analytics',

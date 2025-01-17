@@ -1,31 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
-import { Users, Settings, Database, CreditCard } from 'lucide-react';
+import { Users, Settings, Database } from 'lucide-react';
 import { UserList } from './UserList';
 import { Analytics } from './Analytics';
 import { User } from '../../types/auth';
 import { FirebaseConfigTab } from './FirebaseConfigTab';
-import { PaymentGatewaysTab } from './PaymentGatewaysTab';
 import { APIKeysSection } from './APIKeysSection';
 import { getAllUsers } from '../../services/firestore/users';
 import { useLoadingToast } from '../../hooks/useLoadingToast';
-import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 export function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [activeTab, setActiveTab] = useState('users');
   const { showLoading, hideLoading } = useLoadingToast();
-  const { user } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Verify admin access
-    if (!user || user.role !== 'admin') {
-      navigate('/user');
-      return;
-    }
-
     const fetchUsers = async () => {
       showLoading('Loading users...');
       try {
@@ -38,14 +27,13 @@ export function AdminDashboard() {
       }
     };
     fetchUsers();
-  }, [showLoading, hideLoading, user, navigate]);
-
-  if (!user || user.role !== 'admin') {
-    return null;
-  }
+  }, [showLoading, hideLoading]);
 
   return (
     <div className="space-y-8">
+      {users.length === 0 && (
+        <div className="text-center text-gray-500">Loading users...</div>
+      )}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex gap-2 p-1 mb-6">
           <TabsTrigger value="users" className="tab-trigger">
@@ -64,10 +52,6 @@ export function AdminDashboard() {
             <Database className="w-4 h-4" />
             API Keys
           </TabsTrigger>
-          <TabsTrigger value="payment-gateway" className="tab-trigger">
-            <CreditCard className="w-4 h-4" />
-            Payment Gateway
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -84,10 +68,6 @@ export function AdminDashboard() {
 
         <TabsContent value="api-keys">
           <APIKeysSection />
-        </TabsContent>
-
-        <TabsContent value="payment-gateway">
-          <PaymentGatewaysTab />
         </TabsContent>
       </Tabs>
     </div>

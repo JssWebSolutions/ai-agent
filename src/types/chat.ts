@@ -48,4 +48,5 @@ export interface Interaction {
   timestamp: Date;
   duration: number;
   conversationId: string;
+  successful: boolean;
 }

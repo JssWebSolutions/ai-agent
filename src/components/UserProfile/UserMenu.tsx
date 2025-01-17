@@ -12,7 +12,6 @@ export function UserMenu({ onAdminClick, onSettingsClick }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, signOut } = useAuth();
-  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -41,37 +40,16 @@ export function UserMenu({ onAdminClick, onSettingsClick }: UserMenuProps) {
     await signOut();
   };
 
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
-  const getProfileImage = () => {
-    if (!user.profileImage || imageError) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-          <User className="w-5 h-5 text-blue-600" />
-        </div>
-      );
-    }
-
-    return (
-      <img
-        src={user.profileImage}
-        alt={user.name}
-        className="w-8 h-8 rounded-full object-cover"
-        onError={handleImageError}
-      />
-    );
-  };
-
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
       >
-        {getProfileImage()}
-        <span className="text-sm font-medium text-gray-700 hidden md:block">{user.name}</span>
+        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+          <User className="w-5 h-5 text-blue-600" />
+        </div>
+        <span className="text-sm font-medium text-gray-700">{user.name}</span>
       </button>
 
       <div

@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import{ useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Plan } from '../../types/subscription';
 import { processPayment } from '../../services/payment/stripe';
 import { useToast } from '../../contexts/ToastContext';
-import { validateStripeConfig } from '../../services/payment/config';
 
 interface PaymentFormProps {
   plan: Plan;
@@ -21,41 +20,28 @@ export function PaymentForm({ plan, clientSecret, onSuccess, onCancel }: Payment
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!stripe || !elements) {
-      setError('Payment system is not ready. Please try again.');
-      return;
-    }
-
-    if (!validateStripeConfig()) {
-      setError('Payment system is not properly configured. Please contact support.');
-      return;
-    }
+    if (!stripe || !elements) return;
 
     setProcessing(true);
     setError(null);
 
     try {
       const cardElement = elements.getElement(CardElement);
-      if (!cardElement) {
-        throw new Error('Card element not found');
-      }
+      if (!cardElement) throw new Error('Card element not found');
 
       const { error, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const result = await processPayment(clientSecret, {
         card: paymentMethod!.card!
       });
 
       if (!result.success) {
-        throw new Error(result.error || 'Payment failed');
+        throw new Error(result.error);
       }
 
       toast({

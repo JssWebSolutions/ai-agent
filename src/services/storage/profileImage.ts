@@ -1,6 +1,5 @@
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
-import { updateUserDocument } from '../auth/userService';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -20,24 +19,11 @@ export async function uploadProfileImage(userId: string, file: File): Promise<st
   const storageRef = ref(storage, `profile-images/${userId}/${fileName}`);
 
   try {
-    // Upload the file
     const snapshot = await uploadBytes(storageRef, file);
-    
-    // Get the download URL
     const downloadUrl = await getDownloadURL(snapshot.ref);
-    
-    // Update user document with new profile image URL
-    await updateUserDocument(userId, {
-      profileImage: downloadUrl,
-      updatedAt: new Date()
-    });
-
     return downloadUrl;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error uploading profile image:', error);
-    if (error.code === 'storage/unauthorized') {
-      throw new Error('Permission denied to upload profile image. Please check your storage rules.');
-    }
     throw new Error('Failed to upload profile image');
   }
 }

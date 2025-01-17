@@ -1,7 +1,6 @@
 import { Menu } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { menuItems } from './MenuItems';
-import { useAuth } from '../../../contexts/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -10,16 +9,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
-  const { user } = useAuth();
-
-  // Filter menu items based on user role
-  const filteredMenuItems = menuItems.filter(item => {
-    if (item.adminOnly && (!user || user.role !== 'admin')) {
-      return false;
-    }
-    return true;
-  });
-
   return (
     <>
       {/* Overlay */}
@@ -46,7 +35,7 @@ export function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
         </div>
         <nav className="p-4">
           <ul className="space-y-2">
-            {filteredMenuItems.map((item) => (
+            {menuItems.map((item) => (
               <li key={item.path}>
                 <button
                   onClick={() => onNavigate(item.path)}

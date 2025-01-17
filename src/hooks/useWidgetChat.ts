@@ -11,7 +11,7 @@ import { useLoadingToast } from './useLoadingToast';
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'agent';
+  sender: 'user' | 'bot';
   timestamp: Date;
 }
 
@@ -20,7 +20,7 @@ export function useWidgetChat(agent: Agent) {
     {
       id: 'initial',
       text: agent.firstMessage,
-      sender: 'agent',
+      sender: 'bot',
       timestamp: new Date()
     }
   ]);
@@ -70,7 +70,7 @@ export function useWidgetChat(agent: Agent) {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: response,
-        sender: 'agent',
+        sender: 'bot',
         timestamp: new Date()
       };
 
@@ -94,7 +94,7 @@ export function useWidgetChat(agent: Agent) {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: errorMessage,
-        sender: 'agent',
+        sender: 'bot',
         timestamp: new Date()
       };
 

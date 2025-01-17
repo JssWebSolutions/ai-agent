@@ -20,13 +20,8 @@ export function DashboardMetrics({ agents }: DashboardMetricsProps) {
   useEffect(() => {
     const loadUsage = async () => {
       if (user?.id) {
-        try {
-          const stats = await getUsageStats(user.id);
-          setUsageStats(stats);
-        } catch (error) {
-          console.error("Error getting usage stats:", error);
-          setUsageStats(null);
-        }
+        const stats = await getUsageStats(user.id);
+        setUsageStats(stats);
       }
     };
     loadUsage();

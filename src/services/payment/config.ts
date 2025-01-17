@@ -1,5 +1,5 @@
 export const STRIPE_CONFIG = {
-  PUBLIC_KEY: import.meta.env.VITE_STRIPE_PUBLIC_KEY || '',
+  PUBLIC_KEY: import.meta.env.VITE_STRIPE_PUBLIC_KEY,
   API_URL: import.meta.env.VITE_API_BASE_URL || '/api',
   ENDPOINTS: {
     CREATE_INTENT: '/create-payment-intent',
@@ -12,12 +12,3 @@ export const STRIPE_CONFIG = {
     GENERIC_ERROR: 'An error occurred while processing your payment'
   }
 };
-
-// Validate Stripe configuration
-export function validateStripeConfig(): boolean {
-  if (!STRIPE_CONFIG.PUBLIC_KEY) {
-    console.error('Missing Stripe public key');
-    return false;
-  }
-  return true;
-}

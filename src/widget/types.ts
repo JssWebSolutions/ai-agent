@@ -17,7 +17,7 @@ export interface WidgetConfig {
 export interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'agent';
+  sender: 'user' | 'bot';
   timestamp: Date;
 }
 

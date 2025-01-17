@@ -6,7 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'agent';
+  sender: 'user' | 'bot';
   timestamp: Date;
 }
 

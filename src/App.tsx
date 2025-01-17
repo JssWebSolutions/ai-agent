@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
@@ -13,15 +14,13 @@ import { ModernLandingPage } from './components/Landing/ModernLandingPage';
 import { PlanSelector } from './components/Subscription/Plans/PlanSelector';
 import { AnalyticsDashboard } from './components/RealTime/Dashboard/AnalyticsDashboard';
 import { ChatInterface } from './components/RealTime/Chat/ChatInterface';
-import { RecentActivityPanel } from './components/Dashboard/RecentActivityPanel';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
-  requireAdmin?: boolean;
 }
 
-function PrivateRoute({ children, requireAdmin = false }: PrivateRouteProps) {
-  const { isAuthenticated, loading, user } = useAuth();
+function PrivateRoute({ children }: PrivateRouteProps) {
+  const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (
@@ -31,15 +30,7 @@ function PrivateRoute({ children, requireAdmin = false }: PrivateRouteProps) {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  if (requireAdmin && user?.role !== 'admin') {
-    return <Navigate to="/user" replace />;
-  }
-
-  return children;
+  return isAuthenticated ? children : <Navigate to="/auth" replace />;
 }
 
 export default function App() {
@@ -54,21 +45,8 @@ export default function App() {
       {/* Public Routes */}
       <Route path="/" element={<ModernLandingPage />} />
       <Route path="/plans" element={<PlanSelector />} />
-      <Route path="/recent" element={<RecentActivityPanel />} />
       <Route path="/subscription" element={<SubscriptionPage />} />
       <Route path="/auth" element={<AuthForm mode={authMode} onToggleMode={handleToggleAuthMode} />} />
-
-      {/* Admin Routes */}
-      <Route
-        path="/admin"
-        element={
-          <PrivateRoute requireAdmin>
-            <MainLayout>
-              <AdminDashboard />
-            </MainLayout>
-          </PrivateRoute>
-        }
-      />
 
       {/* Authenticated Routes */}
       <Route
@@ -96,9 +74,7 @@ export default function App() {
         element={
           <PrivateRoute>
             <MainLayout>
-              <ChatInterface onMenuToggle={function (): void {
-                throw new Error('Function not implemented.');
-              } } />
+              <ChatInterface />
             </MainLayout>
           </PrivateRoute>
         }
@@ -119,6 +95,16 @@ export default function App() {
           <PrivateRoute>
             <MainLayout>
               <AgentDetail />
+            </MainLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute>
+            <MainLayout>
+              <AdminDashboard />
             </MainLayout>
           </PrivateRoute>
         }

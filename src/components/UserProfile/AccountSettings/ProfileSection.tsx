@@ -5,7 +5,7 @@ import { useToast } from '../../../contexts/ToastContext';
 import { uploadProfileImage } from '../../../services/storage/profileImage';
 
 export function ProfileSection() {
-  const { user, refreshUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -16,39 +16,25 @@ export function ProfileSection() {
 
     setLoading(true);
     try {
-      await uploadProfileImage(user.id, file);
-      await refreshUser(); // Refresh user data to get the updated profile image
+      const imageUrl = await uploadProfileImage(user.id, file);
+      await updateUser({ profileImage: imageUrl });
       toast({
         title: 'Success',
         description: 'Profile image updated successfully',
         type: 'success'
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to upload profile image',
+        description: 'Failed to upload profile image',
         type: 'error'
       });
     } finally {
       setLoading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
   if (!user) return null;
-
-  function updateUser(updates: { name?: string; bio?: string }): void {
-    // Implement the function to update user details
-    if (user && updates.name) {
-      user.name = updates.name;
-    }
-    if (user && updates.bio) {
-      user.bio = updates.bio;
-    }
-    // Add logic to save the updated user details
-  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
@@ -70,7 +56,7 @@ export function ProfileSection() {
                 />
                 {user.profileImage && (
                   <button
-                    onClick={() => refreshUser()}
+                    onClick={() => updateUser({ profileImage: '' })}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X className="w-4 h-4" />
