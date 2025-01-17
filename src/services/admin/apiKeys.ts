@@ -17,15 +17,10 @@ export async function getAPIKeys(): Promise<APIKeys | null> {
     const docSnap = await getDoc(docRef);
     
     if (!docSnap.exists()) {
-      return {
-        updatedAt: new Date(),
-        updatedBy: ''
-      };
+      return null;
     }
     
     const data = docSnap.data();
-    
-    // Initialize with non-sensitive data
     const decryptedKeys: APIKeys = {
       updatedAt: data.updatedAt?.toDate() || new Date(),
       updatedBy: data.updatedBy || ''
@@ -34,9 +29,9 @@ export async function getAPIKeys(): Promise<APIKeys | null> {
     // Safely decrypt each key if it exists
     if (data.openai) {
       try {
-        const decrypted = await decrypt(data.openai);
-        if (decrypted) {
-          decryptedKeys.openai = decrypted;
+        const decryptedOpenAI = await decrypt(data.openai);
+        if (decryptedOpenAI) {
+          decryptedKeys.openai = decryptedOpenAI;
         }
       } catch (error) {
         console.error('Error decrypting OpenAI key:', error);
@@ -45,9 +40,9 @@ export async function getAPIKeys(): Promise<APIKeys | null> {
 
     if (data.gemini) {
       try {
-        const decrypted = await decrypt(data.gemini);
-        if (decrypted) {
-          decryptedKeys.gemini = decrypted;
+        const decryptedGemini = await decrypt(data.gemini);
+        if (decryptedGemini) {
+          decryptedKeys.gemini = decryptedGemini;
         }
       } catch (error) {
         console.error('Error decrypting Gemini key:', error);
@@ -57,36 +52,32 @@ export async function getAPIKeys(): Promise<APIKeys | null> {
     return decryptedKeys;
   } catch (error) {
     console.error('Error getting API keys:', error);
-    throw new Error('Failed to retrieve API keys. Please try again later.');
+    return null;
   }
 }
 
 export async function updateAPIKeys(keys: Partial<APIKeys>, adminId: string): Promise<void> {
   if (!adminId) {
-    throw new Error('Admin ID is required to update API keys');
+    throw new Error('Admin ID is required');
   }
 
   try {
     const docRef = doc(db, 'settings', API_KEYS_DOC);
-    const docSnap = await getDoc(docRef);
-    
-    // Prepare the update data
     const updateData: Record<string, any> = {
       updatedAt: new Date(),
       updatedBy: adminId
     };
 
-    // Only encrypt and update provided keys that are not empty
-    if (typeof keys.openai === 'string') {
-      const trimmed = keys.openai.trim();
-      updateData.openai = trimmed ? await encrypt(trimmed) : null;
+    // Only encrypt and update keys that have values
+    if (keys.openai !== undefined) {
+      updateData.openai = keys.openai ? await encrypt(keys.openai) : null;
     }
     
-    if (typeof keys.gemini === 'string') {
-      const trimmed = keys.gemini.trim();
-      updateData.gemini = trimmed ? await encrypt(trimmed) : null;
+    if (keys.gemini !== undefined) {
+      updateData.gemini = keys.gemini ? await encrypt(keys.gemini) : null;
     }
 
+    const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       await updateDoc(docRef, updateData);
     } else {
@@ -94,6 +85,6 @@ export async function updateAPIKeys(keys: Partial<APIKeys>, adminId: string): Pr
     }
   } catch (error) {
     console.error('Error updating API keys:', error);
-    throw new Error('Failed to update API keys. Please ensure all values are valid and try again.');
+    throw new Error('Failed to update API keys. Please try again.');
   }
 }

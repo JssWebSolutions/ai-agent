@@ -30,6 +30,10 @@ export const defaultAgent: Omit<Agent, 'id'> = {
   analytics: {
     interactions: [],
   },
+  apiKeys: {
+    openai: undefined,
+    gemini: undefined
+  }
 };
 
 export default defaultAgent;

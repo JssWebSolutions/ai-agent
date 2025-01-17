@@ -1,10 +1,12 @@
-import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { Usage } from '../../types/subscription';
 import { PLANS } from './plans';
 import { User } from '../../types/auth';
 
 export async function getUsageStats(userId: string): Promise<Usage | null> {
+  if (!userId) return null;
+  
   try {
     const usageRef = doc(db, 'usage', userId);
     const usageDoc = await getDoc(usageRef);
@@ -25,15 +27,21 @@ export async function getUsageStats(userId: string): Promise<Usage | null> {
         notifications: []
       };
       
-      await setDoc(usageRef, { ...defaultUsage });
+      await setDoc(usageRef, {
+        ...defaultUsage,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
       return defaultUsage;
     }
 
+    const data = usageDoc.data();
     return {
-      ...usageDoc.data(),
+      ...data,
+      userId,
       period: {
-        start: usageDoc.data().period.start.toDate(),
-        end: usageDoc.data().period.end.toDate()
+        start: data.period.start.toDate(),
+        end: data.period.end.toDate()
       }
     } as Usage;
   } catch (error) {
@@ -43,6 +51,8 @@ export async function getUsageStats(userId: string): Promise<Usage | null> {
 }
 
 export async function incrementMessageCount(userId: string): Promise<boolean> {
+  if (!userId) return false;
+  
   try {
     const usageRef = doc(db, 'usage', userId);
     const userRef = doc(db, 'users', userId);
@@ -53,7 +63,7 @@ export async function incrementMessageCount(userId: string): Promise<boolean> {
     ]);
 
     const user = userDoc.data() as User;
-    const planId = user.subscription?.planId || 'plan_free';
+    const planId = user?.subscription?.planId || 'plan_free';
     const plan = Object.values(PLANS).find(p => p.id === planId);
 
     if (!plan) {
@@ -69,7 +79,8 @@ export async function incrementMessageCount(userId: string): Promise<boolean> {
 
     // Increment message count
     await updateDoc(usageRef, {
-      'metrics.totalMessages': increment(1)
+      'metrics.totalMessages': increment(1),
+      updatedAt: serverTimestamp()
     });
 
     return true;
@@ -80,6 +91,8 @@ export async function incrementMessageCount(userId: string): Promise<boolean> {
 }
 
 export async function canCreateAgent(userId: string): Promise<boolean> {
+  if (!userId) return false;
+  
   try {
     const userRef = doc(db, 'users', userId);
     const userDoc = await getDoc(userRef);

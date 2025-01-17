@@ -5,7 +5,7 @@ import { useToast } from '../../../contexts/ToastContext';
 import { uploadProfileImage } from '../../../services/storage/profileImage';
 
 export function ProfileSection() {
-  const { user, updateUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -16,9 +16,8 @@ export function ProfileSection() {
 
     setLoading(true);
     try {
-      const imageUrl = await uploadProfileImage(user.id, file);
-      console.log('Uploaded image URL:', imageUrl);
-      await updateUser({ profileImage: imageUrl });
+      await uploadProfileImage(user.id, file);
+      await refreshUser(); // Refresh user data to get the updated profile image
       toast({
         title: 'Success',
         description: 'Profile image updated successfully',
@@ -32,6 +31,9 @@ export function ProfileSection() {
       });
     } finally {
       setLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -51,13 +53,13 @@ export function ProfileSection() {
             ) : (
               <div className="relative group">
                 <img
-                  src={user.profileImage ? encodeURIComponent(user.profileImage) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+                  src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
                   alt={user.name}
                   className="w-24 h-24 rounded-full object-cover"
                 />
                 {user.profileImage && (
                   <button
-                    onClick={() => updateUser({ profileImage: '' })}
+                    onClick={() => refreshUser()}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X className="w-4 h-4" />

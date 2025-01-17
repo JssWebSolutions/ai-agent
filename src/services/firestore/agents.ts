@@ -180,6 +180,10 @@ export function getDefaultAgent(userId: string): Omit<Agent, 'id'> {
       customColors: null
     },
     trainingExamples: [],
+    apiKeys: {
+      openai: undefined,
+      gemini: undefined
+    },
     analytics: {
       interactions: []
     }

@@ -58,6 +58,10 @@ export interface Agent {
   analytics: {
     interactions: Interaction[];
   };
+  apiKeys: {
+    openai?: string;
+    gemini?: string;
+  };
   createdAt?: FieldValue;
   updatedAt?: FieldValue;
 }

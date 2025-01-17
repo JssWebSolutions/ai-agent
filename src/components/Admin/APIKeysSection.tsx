@@ -13,7 +13,7 @@ export function APIKeysSection() {
     openai: false,
     gemini: false
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -22,6 +22,8 @@ export function APIKeysSection() {
   }, []);
 
   const loadAPIKeys = async () => {
+    if (!user?.id) return;
+
     try {
       const apiKeys = await getAPIKeys();
       if (apiKeys) {
@@ -36,6 +38,8 @@ export function APIKeysSection() {
         description: error.message || 'Failed to load API keys',
         type: 'error'
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,8 +57,8 @@ export function APIKeysSection() {
     try {
       // Only update keys that have values
       const keysToUpdate: Record<string, string> = {};
-      if (keys.openai) keysToUpdate.openai = keys.openai;
-      if (keys.gemini) keysToUpdate.gemini = keys.gemini;
+      if (keys.openai.trim()) keysToUpdate.openai = keys.openai.trim();
+      if (keys.gemini.trim()) keysToUpdate.gemini = keys.gemini.trim();
 
       await updateAPIKeys(keysToUpdate, user.id);
       
@@ -73,6 +77,14 @@ export function APIKeysSection() {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-lg shadow">

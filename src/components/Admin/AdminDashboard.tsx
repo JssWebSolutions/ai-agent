@@ -9,13 +9,23 @@ import { PaymentGatewaysTab } from './PaymentGatewaysTab';
 import { APIKeysSection } from './APIKeysSection';
 import { getAllUsers } from '../../services/firestore/users';
 import { useLoadingToast } from '../../hooks/useLoadingToast';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [activeTab, setActiveTab] = useState('users');
   const { showLoading, hideLoading } = useLoadingToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Verify admin access
+    if (!user || user.role !== 'admin') {
+      navigate('/user');
+      return;
+    }
+
     const fetchUsers = async () => {
       showLoading('Loading users...');
       try {
@@ -28,13 +38,14 @@ export function AdminDashboard() {
       }
     };
     fetchUsers();
-  }, [showLoading, hideLoading]);
+  }, [showLoading, hideLoading, user, navigate]);
+
+  if (!user || user.role !== 'admin') {
+    return null;
+  }
 
   return (
     <div className="space-y-8">
-      {users.length === 0 && (
-        <div className="text-center text-gray-500">Loading users...</div>
-      )}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex gap-2 p-1 mb-6">
           <TabsTrigger value="users" className="tab-trigger">

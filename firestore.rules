@@ -10,12 +10,28 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
       allow delete: if isAdmin();
+    }
+
+    // Usage collection
+    match /usage/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if isAuthenticated() && (isOwner(userId) || isAdmin());
+    }
+
+    // Settings collection
+    match /settings/{document=**} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if isAuthenticated() && isAdmin();
     }
 
     // Agents collection
@@ -28,30 +44,13 @@ service cloud.firestore {
       );
     }
 
-    // Settings collection (API keys etc)
-    match /settings/{document} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
+    // Admin-only collections
+    match /activities/{activityId} {
+      allow read, write: if isAuthenticated() && isAdmin();
     }
 
-    // Usage collection
-    match /usage/{document} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // Payment settings collection
-    match /settings/payment-settings {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // Subscription collection
-    match /subscriptions/{subscriptionId} {
-      allow read: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid || isAdmin()
-      );
-      allow write: if isAdmin();
+    match /analytics/{document=**} {
+      allow read, write: if isAuthenticated() && isAdmin();
     }
   }
 }
