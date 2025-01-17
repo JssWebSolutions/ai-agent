@@ -3,14 +3,14 @@ import { getAPIKeys } from '../../services/admin/apiKeys';
 import { getChatResponse } from '../../services/api';
 import { Agent } from '../../types/agent';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 export class WidgetApiClient {
   private readonly agentId: string;
-  private readonly config: WidgetConfig;
   private agent: Agent | null = null;
 
   constructor(config: WidgetConfig) {
     this.agentId = config.agentId;
-    this.config = config;
   }
 
   async initialize() {

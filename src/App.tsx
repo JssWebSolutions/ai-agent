@@ -96,7 +96,9 @@ export default function App() {
         element={
           <PrivateRoute>
             <MainLayout>
-              <ChatInterface />
+              <ChatInterface onMenuToggle={function (): void {
+                throw new Error('Function not implemented.');
+              } } />
             </MainLayout>
           </PrivateRoute>
         }

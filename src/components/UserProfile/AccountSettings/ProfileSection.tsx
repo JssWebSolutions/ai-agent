@@ -39,6 +39,17 @@ export function ProfileSection() {
 
   if (!user) return null;
 
+  function updateUser(updates: { name?: string; bio?: string }): void {
+    // Implement the function to update user details
+    if (user && updates.name) {
+      user.name = updates.name;
+    }
+    if (user && updates.bio) {
+      user.bio = updates.bio;
+    }
+    // Add logic to save the updated user details
+  }
+
   return (
     <div className="bg-white p-6 rounded-lg shadow">
       <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
