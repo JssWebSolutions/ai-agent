@@ -51,10 +51,6 @@ export interface Agent {
   responseStyle: ResponseStyle;
   interactionMode: InteractionMode;
   behaviorRules: string[];
-  apiKeys?: {
-    openai?: string;
-    gemini?: string;
-  };
   llmProvider: 'openai' | 'gemini';
   model: string;
   widgetSettings: WidgetSettings;

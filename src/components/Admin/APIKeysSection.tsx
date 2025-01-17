@@ -30,21 +30,34 @@ export function APIKeysSection() {
           gemini: apiKeys.gemini || ''
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to load API keys',
+        description: error.message || 'Failed to load API keys',
         type: 'error'
       });
     }
   };
 
   const handleSave = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in as an admin to update API keys',
+        type: 'error'
+      });
+      return;
+    }
     
     setLoading(true);
     try {
-      await updateAPIKeys(keys, user.id);
+      // Only update keys that have values
+      const keysToUpdate: Record<string, string> = {};
+      if (keys.openai) keysToUpdate.openai = keys.openai;
+      if (keys.gemini) keysToUpdate.gemini = keys.gemini;
+
+      await updateAPIKeys(keysToUpdate, user.id);
+      
       toast({
         title: 'Success',
         description: 'API keys updated successfully',
@@ -53,7 +66,7 @@ export function APIKeysSection() {
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to update API keys',
+        description: error.message || 'Failed to update API keys',
         type: 'error'
       });
     } finally {

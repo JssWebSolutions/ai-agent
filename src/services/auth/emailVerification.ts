@@ -11,7 +11,7 @@ const RATE_LIMIT_DURATION = 60000; // 1 minute
 export async function sendVerificationEmail(user: FirebaseUser): Promise<void> {
   const now = Date.now();
   const timeElapsed = now - lastEmailSentTimestamp;
-  const verifyEmailURL = `${window.location.origin}/auth/verify-email`;
+
   // Check if the rate limit has been exceeded
   if (timeElapsed < RATE_LIMIT_DURATION) {
     const remainingSeconds = Math.ceil(
@@ -24,40 +24,49 @@ export async function sendVerificationEmail(user: FirebaseUser): Promise<void> {
   }
 
   try {
+    // Ensure we have valid action code settings
+    const verifyEmailURL = `${window.location.origin}/auth/verify-email`;
     const settings = {
       ...actionCodeSettings,
       url: verifyEmailURL,
+      handleCodeInApp: true
     };
 
     // Send the verification email using Firebase
     await firebaseSendEmailVerification(user, settings);
     lastEmailSentTimestamp = now; // Update timestamp after successful email sent
-  } catch (error) {
-    // Check if the error is an instance of the native JavaScript Error
-    if (error instanceof Error) {
-      switch (error.message) {
-        case 'auth/unauthorized-continue-uri':
-          throw new AuthError(
-            'Unable to send verification email. Please try again later.',
-            error.message
-          );
-        case 'auth/too-many-requests':
-          throw new AuthError(
-            'Too many requests. Please try again in a few minutes.',
-            error.message
-          );
-        default:
-          throw new AuthError(
-            'Failed to send verification email. Please try again.',
-            error.message || 'auth/unknown'
-          );
-      }
-    } else {
-      // Handle other errors that may not be Firebase-specific
+  } catch (error: any) {
+    // Handle specific Firebase errors
+    if (error.code === 'auth/invalid-continue-uri' || error.code === 'auth/missing-continue-uri') {
       throw new AuthError(
-        'An unexpected error occurred. Please try again.',
-        'auth/unknown'
+        'Email verification configuration error. Please contact support.',
+        'auth/configuration-error'
       );
     }
+    if (error.code === 'auth/requires-recent-login') {
+      throw new AuthError(
+        'Please sign out and sign in again to verify your email.',
+        'auth/requires-recent-login'
+      );
+    }
+    if (error.code === 'auth/too-many-requests') {
+      throw new AuthError(
+        'Too many requests. Please try again in a few minutes.',
+        'auth/too-many-requests'
+      );
+    }
+    if (error.code === 'auth/unauthorized-continue-uri') {
+      throw new AuthError(
+        'Invalid verification configuration. Please contact support.',
+        'auth/unauthorized-continue-uri'
+      );
+    }
+
+    // Generic error handler
+    console.error('Email verification error:', error);
+    throw new AuthError(
+      'Failed to send verification email. Please try again later.',
+      error.code || 'auth/unknown'
+    );
   }
 }

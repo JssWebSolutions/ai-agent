@@ -4,6 +4,10 @@ import { useAgentStore } from '../../store/agentStore';
 import { cn } from '../../utils/cn';
 import { MessageSquare, ArrowLeft, Bot, Circle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../hooks/useToast';
+import { db } from '../../config/firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 interface Message {
   id: string;
@@ -17,6 +21,7 @@ interface Conversation {
   id: string;
   agentName: string;
   agentImage?: string;
+  agentId: string; // Added agentId for reference
   messages: Message[];
   lastActive: Date;
   unreadCount: number;
@@ -26,58 +31,122 @@ export function RecentActivityPanel() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const { agents } = useAgentStore();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const newConversations = agents.reduce((acc: Conversation[], agent) => {
-      const agentInteractions = agent.analytics.interactions || [];
+    if (expandedId) {
+      const markMessagesAsRead = async () => {
+        if (!user?.id) return;
 
-      const conversationGroups = agentInteractions.reduce((groups: Record<string, any[]>, interaction) => {
-        const conversationId = interaction.conversationId || 'default';
-        if (!groups[conversationId]) {
-          groups[conversationId] = [];
+        const conversation = conversations.find(c => c.id === expandedId);
+        if (!conversation) return;
+
+        try {
+          const agentRef = doc(db, 'agents', conversation.agentId);
+          const agentDoc = await getDoc(agentRef);
+
+          if (!agentDoc.exists()) return;
+
+          const updatedInteractions = agentDoc.data().analytics.interactions.map((interaction: any) => {
+            if (interaction.conversationId === expandedId) {
+              return { ...interaction, read: true };
+            }
+            return interaction;
+          });
+
+          await updateDoc(agentRef, {
+            'analytics.interactions': updatedInteractions
+          });
+
+          // Update local state
+          setConversations(prevConversations =>
+            prevConversations.map(conversation => {
+              if (conversation.id === expandedId) {
+                return {
+                  ...conversation,
+                  messages: conversation.messages.map(message => ({
+                    ...message,
+                    read: true
+                  })),
+                  unreadCount: 0
+                };
+              }
+              return conversation;
+            })
+          );
+        } catch (error) {
+          console.error('Error marking messages as read:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to update message status',
+            type: 'error'
+          });
         }
-        groups[conversationId].push(interaction);
-        return groups;
-      }, {});
+      };
 
-      Object.entries(conversationGroups).forEach(([conversationId, interactions]) => {
-        const messages: Message[] = interactions.flatMap(interaction => [
-          {
-            id: `${interaction.id}-query`,
-            text: interaction.query,
-            sender: 'user',
-            timestamp: new Date(interaction.timestamp),
-            read: false, // Default to unread
-          },
-          {
-            id: `${interaction.id}-response`,
-            text: interaction.response,
-            sender: 'agent',
-            timestamp: new Date(interaction.timestamp),
-            read: false, // Default to unread
-          },
-        ]);
+      markMessagesAsRead();
+    }
+  }, [expandedId, conversations, user?.id, toast]);
 
-        messages.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  useEffect(() => {
+    const loadConversations = async () => {
+      const newConversations = agents.reduce((acc: Conversation[], agent) => {
+        const agentInteractions = agent.analytics.interactions || [];
 
-        const unreadCount = messages.filter(m => !m.read).length;
+        const conversationGroups = agentInteractions.reduce((groups: Record<string, any[]>, interaction) => {
+          const conversationId = interaction.conversationId || 'default';
+          if (!groups[conversationId]) {
+            groups[conversationId] = [];
+          }
+          groups[conversationId].push(interaction);
+          return groups;
+        }, {});
 
-        acc.push({
-          id: conversationId,
-          agentName: agent.name,
-          agentImage: agent.image,
-          messages,
-          lastActive: new Date(Math.max(...messages.map(m => m.timestamp.getTime()))),
-          unreadCount,
+        Object.entries(conversationGroups).forEach(([conversationId, interactions]) => {
+          const messages: Message[] = interactions.flatMap(interaction => [
+            {
+              id: `${interaction.id}-query`,
+              text: interaction.query,
+              sender: 'user',
+              timestamp: new Date(interaction.timestamp),
+              read: false, // Default to unread
+            },
+            {
+              id: `${interaction.id}-response`,
+              text: interaction.response,
+              sender: 'agent',
+              timestamp: new Date(interaction.timestamp),
+              read: false, // Default to unread
+            },
+          ]);
+
+          messages.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+          const unreadCount = messages.filter(m => !m.read).length;
+
+          acc.push({
+            id: conversationId,
+            agentName: agent.name,
+            agentId: agent.id, // Include agentId
+            agentImage: agent.image,
+            messages,
+            lastActive: new Date(Math.max(...messages.map(m => m.timestamp.getTime()))),
+            unreadCount,
+          });
         });
-      });
 
-      return acc;
-    }, []);
+        return acc;
+      }, []);
 
-    newConversations.sort((a, b) => b.lastActive.getTime() - a.lastActive.getTime());
-    setConversations(newConversations);
+      newConversations.sort((a, b) => b.lastActive.getTime() - a.lastActive.getTime());
+      setConversations(newConversations);
+      setIsLoading(false);
+    };
+
+    loadConversations();
   }, [agents]);
 
   // Mark messages as read when a conversation is expanded
@@ -102,6 +171,15 @@ export function RecentActivityPanel() {
       );
     }
   }, [expandedId]);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
+        <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+        <p>Loading conversations...</p>
+      </div>
+    );
+  }
 
   if (conversations.length === 0) {
     return (

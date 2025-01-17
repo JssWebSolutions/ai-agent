@@ -10,7 +10,7 @@ export async function updateSubscription(userId: string, plan: Plan): Promise<st
     // Get payment gateway settings
     const paymentSettings = await getPaymentSettings();
     if (!paymentSettings) {
-      throw new PaymentError('Payment gateway not configured', 'gateway_not_configured');
+      throw new PaymentError('Payment system is not configured. Please contact support.', 'payment_not_configured');
     }
 
     // Check which payment gateway is enabled
@@ -20,7 +20,7 @@ export async function updateSubscription(userId: string, plan: Plan): Promise<st
       paymentSettings.razorpay?.enabled ? 'razorpay' : null;
 
     if (!activeGateway) {
-      throw new PaymentError('No payment gateway enabled', 'no_gateway_enabled');
+      throw new PaymentError('No payment gateway is currently available. Please try again later.', 'no_gateway_enabled');
     }
 
     // Create payment intent based on active gateway
@@ -28,17 +28,23 @@ export async function updateSubscription(userId: string, plan: Plan): Promise<st
     switch (activeGateway) {
       case 'stripe':
         if (!paymentSettings.stripe?.secretKey) {
-          throw new PaymentError('Stripe not properly configured', 'stripe_not_configured');
+          throw new PaymentError('Payment system configuration error. Please contact support.', 'stripe_not_configured');
         }
         clientSecret = await createPaymentIntent(plan);
         break;
       // Add cases for other payment gateways as needed
       default:
-        throw new PaymentError('Selected payment gateway not supported', 'unsupported_gateway');
+        throw new PaymentError('Selected payment gateway is not supported', 'unsupported_gateway');
     }
 
     // Update user's subscription info in Firestore
     const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      throw new PaymentError('User not found', 'user_not_found');
+    }
+
     await updateDoc(userRef, {
       'subscription.planId': plan.id,
       'subscription.updatedAt': new Date(),
@@ -52,7 +58,7 @@ export async function updateSubscription(userId: string, plan: Plan): Promise<st
     if (error instanceof PaymentError) {
       throw error;
     }
-    throw new PaymentError('Failed to update subscription', 'update_failed');
+    throw new PaymentError('Failed to update subscription. Please try again later.', 'update_failed');
   }
 }
 

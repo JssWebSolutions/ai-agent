@@ -14,17 +14,20 @@ import {
   FieldValue
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { Agent } from '../../types/agent';
+import { Agent, Interaction } from '../../types/agent';
 import { COLLECTIONS } from '../database/collections';
 import { agentConverter } from './converters';
 import { updateUserAgentCount } from '../auth/userService';
 
+export interface FirestoreAgent extends Agent {
+  createdAt?: FieldValue;
+  updatedAt?: FieldValue;
+}
 
-/**
- * Fetches all agents for a specific user. If no agents exist, it creates a default agent.
- * @param userId - The ID of the user.
- * @returns A promise resolving to an array of agents.
- */
+export interface FirestoreInteraction extends Interaction {
+  read?: boolean;
+}
+
 export async function getUserAgents(userId: string): Promise<Agent[]> {
   try {
     const agentsRef = collection(db, COLLECTIONS.AGENTS).withConverter(agentConverter);
@@ -32,7 +35,6 @@ export async function getUserAgents(userId: string): Promise<Agent[]> {
     const querySnapshot = await getDocs(agentsQuery);
     
     if (querySnapshot.empty) {
-      // Add default agent if no agents exist
       const defaultAgent = getDefaultAgent(userId);
       const id = await createAgent(defaultAgent);
       return [{ ...defaultAgent, id }];
@@ -48,30 +50,16 @@ export async function getUserAgents(userId: string): Promise<Agent[]> {
   }
 }
 
-
-export interface FirestoreAgent extends Agent {
-  createdAt?: FieldValue;
-  updatedAt?: FieldValue;
-}
-
-
-
-/**
- * Creates a new agent document in Firestore.
- * @param agent - The agent data to create.
- * @returns A promise resolving to the new agent's ID.
- */
 export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
   try {
     const agentsRef = collection(db, COLLECTIONS.AGENTS).withConverter(agentConverter);
     const docRef = await addDoc(agentsRef, {
       ...agent,
-      image: agent.image ?? null, // Replace undefined with null
+      image: agent.image ?? null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     } as FirestoreAgent);
     
-    // Update user's agent count
     await updateUserAgentCount(agent.userId, 1);
     
     return docRef.id;
@@ -81,17 +69,11 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
   }
 }
 
-
-/**
- * Updates an existing agent document in Firestore.
- * @param agent - The updated agent data.
- */
 export async function updateAgent(agent: Agent): Promise<void> {
   try {
     const agentRef = doc(db, COLLECTIONS.AGENTS, agent.id).withConverter(agentConverter);
     const { id, ...updateData } = agent;
 
-    // Clean up widget settings before sending to Firestore
     const widgetSettings = {
       ...updateData.widgetSettings,
       customColors: updateData.widgetSettings.theme === 'custom' 
@@ -103,7 +85,6 @@ export async function updateAgent(agent: Agent): Promise<void> {
         : null
     };
 
-    // Clean up the data before sending to Firestore
     const cleanData = {
       ...updateData,
       updatedAt: serverTimestamp(),
@@ -117,10 +98,6 @@ export async function updateAgent(agent: Agent): Promise<void> {
   }
 }
 
-/**
- * Deletes an agent document from Firestore.
- * @param agentId - The ID of the agent to delete.
- */
 export async function deleteAgent(agentId: string): Promise<void> {
   try {
     const agentRef = doc(db, COLLECTIONS.AGENTS, agentId);
@@ -142,11 +119,6 @@ export async function deleteAgent(agentId: string): Promise<void> {
   }
 }
 
-/**
- * Adds an interaction to an agent's analytics.
- * @param agentId - The ID of the agent.
- * @param interaction - The interaction details.
- */
 export async function addInteraction(
   agentId: string, 
   interaction: { 
@@ -154,7 +126,7 @@ export async function addInteraction(
     response: string; 
     responseTime: number; 
     successful: boolean; 
-	conversationId: string;
+    conversationId: string;
   }
 ): Promise<void> {
   try {
@@ -162,6 +134,7 @@ export async function addInteraction(
     const interactionData = {
       id: `interaction-${Date.now()}`,
       ...interaction,
+      read: false,
       timestamp: Timestamp.now()
     };
 
@@ -175,11 +148,6 @@ export async function addInteraction(
   }
 }
 
-/**
- * Returns the default agent configuration for a user.
- * @param userId - The ID of the user.
- * @returns The default agent configuration.
- */
 export function getDefaultAgent(userId: string): Omit<Agent, 'id'> {
   return {
     userId,
@@ -201,10 +169,6 @@ export function getDefaultAgent(userId: string): Omit<Agent, 'id'> {
       'Use appropriate language and tone',
       'Be concise but informative'
     ],
-    apiKeys: {
-      openai: '',
-      gemini: ''
-    },
     llmProvider: 'openai',
     model: 'gpt-3.5-turbo',
     widgetSettings: {
