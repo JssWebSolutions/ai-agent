@@ -1,8 +1,8 @@
-
 import { Settings } from 'lucide-react';
 import { Agent } from '../../../types/agent';
 import { AgentBasicConfig } from './AgentBasicConfig';
 import { AgentPromptConfig } from './AgentPromptConfig';
+import { LLMProviderConfig } from './LLMProviderConfig';
 import { FloatingSaveButton } from '../../SaveButton/FloatingSaveButton';
 import { useFormChanges } from '../../../hooks/useFormChanges';
 
@@ -31,6 +31,11 @@ export function AgentConfigContainer({ agent, onSave }: AgentConfigContainerProp
 
       <div className="space-y-8">
         <AgentBasicConfig
+          agent={currentData}
+          onChange={updateField}
+        />
+
+        <LLMProviderConfig
           agent={currentData}
           onChange={updateField}
         />

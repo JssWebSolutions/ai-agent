@@ -6,6 +6,7 @@ import { LanguageSelector } from './LanguageSelector';
 import { FormField } from '../Form/FormField';
 import { FloatingSaveButton } from '../SaveButton/FloatingSaveButton';
 import { useFormChanges } from '../../hooks/useFormChanges';
+import { LLMProviderConfig } from './Config/LLMProviderConfig';
 
 export function AgentTab() {
   const { selectedAgent, updateAgent } = useAgentStore();
@@ -56,6 +57,11 @@ export function AgentTab() {
               />
             </div>
           </div>
+
+          <LLMProviderConfig
+            agent={currentData}
+            onChange={handleFieldChange}
+          />
 
           <FormField
             label="First Message"

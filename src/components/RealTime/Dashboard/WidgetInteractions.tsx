@@ -14,7 +14,6 @@ interface Interaction {
   timestamp: Date;
   duration: number;
   conversationId: string;
-  successful: boolean;
 }
 
 export function WidgetInteractions({ filter }: { filter: any }) {

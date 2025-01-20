@@ -1,8 +1,10 @@
-import{ useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Bot, X, Mic, Send, MicOff } from 'lucide-react';
 import { Agent } from '../../types/agent';
 import { useWidgetChat } from '../../hooks/useWidgetChat';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { getAPIKeys } from '../../services/admin/apiKeys';
+import { useToast } from '../../contexts/ToastContext';
 
 interface WidgetPreviewProps {
   agent: Agent;
@@ -14,6 +16,7 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
   const settings = agent.widgetSettings;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   const {
     messages,
     inputMessage,
@@ -21,34 +24,76 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
     setInputMessage,
     sendMessage,
     startListening,
-    stopListening
+    stopListening,
   } = useWidgetChat(agent);
-  
+
+  useEffect(() => {
+    if (isOpen) {
+      // Verify API keys when widget opens
+      const verifyApiKeys = async () => {
+        try {
+          const apiKeys = await getAPIKeys();
+          if (!apiKeys) {
+            toast({
+              title: 'Error',
+              description: 'API keys not configured. Please configure API keys in the admin settings.',
+              type: 'error',
+            });
+            onToggle();
+            return;
+          }
+
+          const requiredKey =
+            agent.llmProvider === 'openai' ? apiKeys.openai : apiKeys.gemini;
+          if (!requiredKey) {
+            toast({
+              title: 'Error',
+              description: `${
+                agent.llmProvider === 'openai' ? 'OpenAI' : 'Gemini'
+              } API key not configured. Please configure in admin settings.`,
+              type: 'error',
+            });
+            onToggle();
+          }
+        } catch (error: any) {
+          toast({
+            title: 'Error',
+            description: error.message || 'Failed to verify API keys',
+            type: 'error',
+          });
+          onToggle();
+        }
+      };
+
+      verifyApiKeys();
+    }
+  }, [isOpen, agent, onToggle, toast]);
+
   const positionClasses = {
     'bottom-right': 'bottom-4 right-4',
     'bottom-left': 'bottom-4 left-4',
     'top-right': 'top-4 right-4',
-    'top-left': 'top-4 left-4'
+    'top-left': 'top-4 left-4',
   };
 
   const buttonSizeClasses = {
     small: 'w-12 h-12',
     medium: 'w-14 h-14',
-    large: 'w-16 h-16'
+    large: 'w-16 h-16',
   };
 
   const radiusClasses = {
     none: 'rounded-none',
     small: 'rounded',
     medium: 'rounded-xl',
-    large: 'rounded-2xl'
+    large: 'rounded-2xl',
   };
 
   const getThemeColors = () => {
     if (settings.theme === 'custom' && settings.customColors) {
       return settings.customColors;
     }
-    return settings.theme === 'dark' 
+    return settings.theme === 'dark'
       ? { primary: '#3B82F6', background: '#1F2937', text: '#F9FAFB' }
       : { primary: '#3B82F6', background: '#FFFFFF', text: '#111827' };
   };
@@ -76,15 +121,15 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
   return (
     <div className={`fixed ${positionClasses[settings.position]} z-50`}>
       {isOpen ? (
-        <div 
+        <div
           className={`${radiusClasses[settings.borderRadius]} shadow-lg overflow-hidden`}
-          style={{ 
+          style={{
             width: '320px',
             backgroundColor: colors.background,
-            color: colors.text
+            color: colors.text,
           }}
         >
-          <div 
+          <div
             className="p-4 flex items-center justify-between"
             style={{ backgroundColor: colors.primary }}
           >
@@ -92,15 +137,21 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
               {settings.showAgentImage && (
                 <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
                   {agent.image ? (
-                    <img src={agent.image} alt={agent.name} className="w-full h-full object-cover" />
+                    <img
+                      src={agent.image}
+                      alt={agent.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <Bot className="w-5 h-5 text-white" />
                   )}
                 </div>
               )}
-              <span className="font-medium text-white">{agent.name || 'AI Assistant'}</span>
+              <span className="font-medium text-white">
+                {agent.name || 'AI Assistant'}
+              </span>
             </div>
-            <button 
+            <button
               onClick={onToggle}
               className="text-white/80 hover:text-white transition-colors"
             >
@@ -117,18 +168,26 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
                     msg.sender === 'user' ? 'flex-row-reverse' : ''
                   }`}
                 >
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                    msg.sender === 'user' ? 'bg-blue-100' : 'bg-gray-100'
-                  }`}>
+                  <div
+                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      msg.sender === 'user'
+                        ? 'bg-blue-100'
+                        : 'bg-gray-100'
+                    }`}
+                  >
                     {msg.sender === 'user' ? (
                       <div className="w-5 h-5 bg-blue-600 rounded-full" />
                     ) : (
                       <Bot className="w-5 h-5 text-gray-600" />
                     )}
                   </div>
-                  <div className={`max-w-[70%] rounded-lg p-3 ${
-                    msg.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100'
-                  }`}>
+                  <div
+                    className={`max-w-[70%] rounded-lg p-3 ${
+                      msg.sender === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100'
+                    }`}
+                  >
                     <p>{msg.text}</p>
                     <span className="text-xs opacity-70 mt-1 block">
                       {msg.timestamp.toLocaleTimeString()}
@@ -150,7 +209,11 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
                 }`}
                 disabled={isSubmitting}
               >
-                {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                {isListening ? (
+                  <MicOff className="w-5 h-5" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
               </button>
               <input
                 type="text"
@@ -177,7 +240,11 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
           style={{ backgroundColor: colors.primary }}
         >
           {settings.showAgentImage && agent.image ? (
-            <img src={agent.image} alt={agent.name} className="w-full h-full object-cover" />
+            <img
+              src={agent.image}
+              alt={agent.name}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <Bot className="w-6 h-6 text-white" />
           )}

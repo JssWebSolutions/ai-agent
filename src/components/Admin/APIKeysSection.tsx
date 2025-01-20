@@ -13,7 +13,7 @@ export function APIKeysSection() {
     openai: false,
     gemini: false
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -22,6 +22,8 @@ export function APIKeysSection() {
   }, []);
 
   const loadAPIKeys = async () => {
+    if (!user?.id) return;
+
     try {
       const apiKeys = await getAPIKeys();
       if (apiKeys) {
@@ -30,21 +32,36 @@ export function APIKeysSection() {
           gemini: apiKeys.gemini || ''
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to load API keys',
+        description: error.message || 'Failed to load API keys',
         type: 'error'
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSave = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in as an admin to update API keys',
+        type: 'error'
+      });
+      return;
+    }
     
     setLoading(true);
     try {
-      await updateAPIKeys(keys, user.id);
+      // Only update keys that have values
+      const keysToUpdate: Record<string, string> = {};
+      if (keys.openai.trim()) keysToUpdate.openai = keys.openai.trim();
+      if (keys.gemini.trim()) keysToUpdate.gemini = keys.gemini.trim();
+
+      await updateAPIKeys(keysToUpdate, user.id);
+      
       toast({
         title: 'Success',
         description: 'API keys updated successfully',
@@ -53,13 +70,21 @@ export function APIKeysSection() {
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to update API keys',
+        description: error.message || 'Failed to update API keys',
         type: 'error'
       });
     } finally {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-lg shadow">

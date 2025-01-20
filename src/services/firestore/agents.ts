@@ -14,25 +14,31 @@ import {
   FieldValue
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import { Agent } from '../../types/agent';
+import { Agent, Interaction } from '../../types/agent';
 import { COLLECTIONS } from '../database/collections';
 import { agentConverter } from './converters';
 import { updateUserAgentCount } from '../auth/userService';
 
+export interface FirestoreAgent extends Agent {
+  createdAt?: FieldValue;
+  updatedAt?: FieldValue;
+}
 
-/**
- * Fetches all agents for a specific user. If no agents exist, it creates a default agent.
- * @param userId - The ID of the user.
- * @returns A promise resolving to an array of agents.
- */
+export interface FirestoreInteraction extends Interaction {
+  read?: boolean;
+}
+
 export async function getUserAgents(userId: string): Promise<Agent[]> {
+  if (!userId) {
+    throw new Error('User ID is required');
+  }
+
   try {
     const agentsRef = collection(db, COLLECTIONS.AGENTS).withConverter(agentConverter);
     const agentsQuery = query(agentsRef, where('userId', '==', userId));
     const querySnapshot = await getDocs(agentsQuery);
     
     if (querySnapshot.empty) {
-      // Add default agent if no agents exist
       const defaultAgent = getDefaultAgent(userId);
       const id = await createAgent(defaultAgent);
       return [{ ...defaultAgent, id }];
@@ -48,30 +54,55 @@ export async function getUserAgents(userId: string): Promise<Agent[]> {
   }
 }
 
-
-export interface FirestoreAgent extends Agent {
-  createdAt?: FieldValue;
-  updatedAt?: FieldValue;
-}
-
-
-
-/**
- * Creates a new agent document in Firestore.
- * @param agent - The agent data to create.
- * @returns A promise resolving to the new agent's ID.
- */
 export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
+  if (!agent.userId) {
+    throw new Error('User ID is required');
+  }
+
   try {
-    const agentsRef = collection(db, COLLECTIONS.AGENTS).withConverter(agentConverter);
-    const docRef = await addDoc(agentsRef, {
+    // Ensure all required fields are present
+    const agentData: FirestoreAgent = {
       ...agent,
-      image: agent.image ?? null, // Replace undefined with null
+      name: agent.name || 'New Agent',
+      language: agent.language || 'en',
+      firstMessage: agent.firstMessage || 'Hello! How can I help you today?',
+      systemPrompt: agent.systemPrompt || 'You are a helpful AI assistant.',
+      voiceSettings: agent.voiceSettings || {
+        gender: 'female',
+        pitch: 1,
+        speed: 1,
+        accent: 'neutral'
+      },
+      responseStyle: agent.responseStyle || 'concise',
+      interactionMode: agent.interactionMode || 'informative',
+      behaviorRules: agent.behaviorRules || [],
+      llmProvider: agent.llmProvider || 'openai',
+      model: agent.model || 'gpt-3.5-turbo',
+      widgetSettings: {
+        theme: 'light',
+        position: 'bottom-right',
+        buttonSize: 'medium',
+        borderRadius: 'medium',
+        showAgentImage: true,
+        customColors: null,
+        ...agent.widgetSettings
+      },
+      trainingExamples: agent.trainingExamples || [],
+      analytics: {
+        interactions: []
+      },
+      apiKeys: {
+        openai: undefined,
+        gemini: undefined
+      },
+      image: agent.image || null,
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    } as FirestoreAgent);
+      updatedAt: serverTimestamp()
+    };
+
+    const agentsRef = collection(db, COLLECTIONS.AGENTS).withConverter(agentConverter);
+    const docRef = await addDoc(agentsRef, agentData);
     
-    // Update user's agent count
     await updateUserAgentCount(agent.userId, 1);
     
     return docRef.id;
@@ -80,7 +111,6 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
     throw new Error('Failed to create agent');
   }
 }
-
 
 /**
  * Updates an existing agent document in Firestore.

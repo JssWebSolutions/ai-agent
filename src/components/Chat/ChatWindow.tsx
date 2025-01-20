@@ -20,7 +20,7 @@ interface ChatWindowProps {
 export function ChatWindow({ agent, onMenuToggle }: ChatWindowProps) {
   const [inputMessage, setInputMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const { messages, isLoading, addMessage, setIsTyping } = useChatState();
+  const { messages, isLoading, addMessage } = useChatState();
   const [isProcessing, setIsProcessing] = useState(false);
   const { addInteraction } = useAgentStore();
   const { speak } = useVoiceSynthesis();
@@ -185,3 +185,7 @@ export function ChatWindow({ agent, onMenuToggle }: ChatWindowProps) {
     </div>
   );
 }
+function setIsTyping(_arg0: boolean) {
+  throw new Error('Function not implemented.');
+}
+

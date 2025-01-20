@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Agent } from '../types/agent';
 import { getChatResponse } from '../services/api';
@@ -7,11 +7,12 @@ import { useSpeechRecognition } from './useSpeechRecognition';
 import { useApiKeys } from './useApiKeys';
 import { useAgentStore } from '../store/agentStore';
 import { useLoadingToast } from './useLoadingToast';
+import { getAPIKeys } from '../services/admin/apiKeys';
 
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'bot';
+  sender: 'user' | 'agent';
   timestamp: Date;
 }
 
@@ -20,7 +21,7 @@ export function useWidgetChat(agent: Agent) {
     {
       id: 'initial',
       text: agent.firstMessage,
-      sender: 'bot',
+      sender: 'agent',
       timestamp: new Date()
     }
   ]);
@@ -31,21 +32,22 @@ export function useWidgetChat(agent: Agent) {
   const { validateApiKey } = useApiKeys();
   const { addInteraction } = useAgentStore();
   const { showLoading, hideLoading } = useLoadingToast();
+  const [apiKeys, setApiKeys] = useState<any>(null);
 
-  // Initialize speech recognition
-  const handleSpeechResult = useCallback((transcript: string) => {
-    if (transcript.trim()) {
-      handleMessage(transcript);
-    }
+  useEffect(() => {
+    const loadApiKeys = async () => {
+      try {
+        const keys = await getAPIKeys();
+        setApiKeys(keys);
+      } catch (error) {
+        console.error('Failed to load API keys:', error);
+      }
+    };
+    loadApiKeys();
   }, []);
 
-  const { isListening, startListening, stopListening } = useSpeechRecognition({
-    language: agent.language,
-    onResult: handleSpeechResult
-  });
-
   const handleMessage = async (text: string) => {
-    if (!text.trim() || !agent || isProcessing) return;
+    if (!text.trim() || !agent || isProcessing || !apiKeys) return;
 
     if (!validateApiKey(agent)) return;
 
@@ -70,7 +72,7 @@ export function useWidgetChat(agent: Agent) {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: response,
-        sender: 'bot',
+        sender: 'agent',
         timestamp: new Date()
       };
 
@@ -94,7 +96,7 @@ export function useWidgetChat(agent: Agent) {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: errorMessage,
-        sender: 'bot',
+        sender: 'agent',
         timestamp: new Date()
       };
 
@@ -117,12 +119,9 @@ export function useWidgetChat(agent: Agent) {
   return {
     messages,
     inputMessage,
-    isListening,
     isProcessing,
     setInputMessage,
     sendMessage: handleMessage,
-    startListening,
-    stopListening,
     conversationId
   };
 }

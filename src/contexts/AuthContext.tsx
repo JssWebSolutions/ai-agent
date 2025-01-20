@@ -22,6 +22,7 @@ interface AuthContextType {
   updateUser: (data: Partial<User>) => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,17 +33,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const loadUserData = async (uid: string) => {
+    try {
+      const userData = await getUserDocument(uid);
+      if (userData) {
+        setUser({
+          ...userData,
+          emailVerified: auth.currentUser?.emailVerified || false
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          const userData = await getUserDocument(firebaseUser.uid);
-          if (userData) {
-            setUser({
-              ...userData,
-              emailVerified: firebaseUser.emailVerified
-            });
-          }
+          await loadUserData(firebaseUser.uid);
         } else {
           setUser(null);
         }
@@ -56,6 +66,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => unsubscribe();
   }, []);
+
+  const refreshUser = async () => {
+    if (auth.currentUser) {
+      await loadUserData(auth.currentUser.uid);
+    }
+  };
 
   const value: AuthContextType = {
     user,
@@ -157,23 +173,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
-    sendPasswordReset: async (email) => {
-      try {
-        await sendPasswordReset(email);
-        toast({
-          title: 'Email Sent',
-          description: 'Password reset instructions have been sent',
-          type: 'success'
-        });
-      } catch (error: any) {
-        toast({
-          title: 'Error',
-          description: error.message,
-          type: 'error'
-        });
-        throw error;
-      }
-    }
+    sendPasswordReset,
+    refreshUser
   };
 
   return (

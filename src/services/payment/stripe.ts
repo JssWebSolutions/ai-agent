@@ -1,22 +1,33 @@
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { STRIPE_CONFIG } from './config';
 import { PaymentError } from './errors';
 import { Plan } from '../../types/subscription';
 
-const stripePromise = loadStripe(STRIPE_CONFIG.PUBLIC_KEY);
+// Initialize Stripe only if public key is available
+let stripePromise: Promise<Stripe | null> | null = null;
+
+const getStripe = () => {
+  if (!stripePromise && STRIPE_CONFIG.PUBLIC_KEY) {
+    stripePromise = loadStripe(STRIPE_CONFIG.PUBLIC_KEY);
+  }
+  return stripePromise;
+};
 
 export async function createPaymentIntent(plan: Plan): Promise<string> {
   if (!STRIPE_CONFIG.PUBLIC_KEY) {
     throw new PaymentError(
-      STRIPE_CONFIG.ERROR_MESSAGES.MISSING_KEY,
-      'missing_key'
+      'Payment system is not configured. Please try again later.',
+      'stripe_not_configured'
     );
   }
 
   try {
     const response = await fetch(`${STRIPE_CONFIG.API_URL}${STRIPE_CONFIG.ENDPOINTS.CREATE_INTENT}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${STRIPE_CONFIG.PUBLIC_KEY}`
+      },
       body: JSON.stringify({
         planId: plan.id,
         amount: plan.price.monthly,
@@ -27,7 +38,7 @@ export async function createPaymentIntent(plan: Plan): Promise<string> {
     if (!response.ok) {
       const error = await response.json();
       throw new PaymentError(
-        error.message || STRIPE_CONFIG.ERROR_MESSAGES.INTENT_FAILED,
+        error.message || 'Failed to create payment intent',
         'intent_failed',
         response.status
       );
@@ -40,16 +51,9 @@ export async function createPaymentIntent(plan: Plan): Promise<string> {
       throw error;
     }
 
-    if (error instanceof TypeError) {
-      throw new PaymentError(
-        STRIPE_CONFIG.ERROR_MESSAGES.NETWORK_ERROR,
-        'network_error'
-      );
-    }
-
     throw new PaymentError(
-      STRIPE_CONFIG.ERROR_MESSAGES.GENERIC_ERROR,
-      'unknown_error'
+      'Failed to initialize payment. Please try again.',
+      'payment_failed'
     );
   }
 }
@@ -58,15 +62,16 @@ export async function processPayment(
   clientSecret: string,
   paymentMethod: { card: any }
 ): Promise<{ success: boolean; transactionId?: string; error?: string }> {
-  try {
-    const stripe = await stripePromise;
-    if (!stripe) {
-      throw new PaymentError(
-        STRIPE_CONFIG.ERROR_MESSAGES.MISSING_KEY,
-        'missing_key'
-      );
-    }
+  const stripe = await getStripe();
+  
+  if (!stripe) {
+    return {
+      success: false,
+      error: 'Payment system is not configured'
+    };
+  }
 
+  try {
     const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: paymentMethod.card,
@@ -75,19 +80,6 @@ export async function processPayment(
     });
 
     if (error) {
-      throw new PaymentError(
-        error.message || 'An unexpected error occurred during payment processing.',
-        'payment_failed'
-      );
-    }
-    
-
-    return {
-      success: true,
-      transactionId: paymentIntent?.id
-    };
-  } catch (error) {
-    if (error instanceof PaymentError) {
       return {
         success: false,
         error: error.message
@@ -95,8 +87,13 @@ export async function processPayment(
     }
 
     return {
+      success: true,
+      transactionId: paymentIntent?.id
+    };
+  } catch (error) {
+    return {
       success: false,
-      error: STRIPE_CONFIG.ERROR_MESSAGES.GENERIC_ERROR
+      error: 'An unexpected error occurred during payment processing'
     };
   }
 }

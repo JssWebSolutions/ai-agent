@@ -1,22 +1,56 @@
-import{ useState } from 'react';
+import { useState } from 'react';
 import { Code, Copy, Check } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { AppearanceSettings } from './AppearanceSettings';
 import { WidgetPreview } from './WidgetPreview';
 import { useWidgetSettings } from '../../hooks/useWidgetSettings';
 import { FloatingSaveButton } from '../SaveButton/FloatingSaveButton';
+import { getAPIKeys } from '../../services/admin/apiKeys';
+import { useToast } from '../../contexts/ToastContext';
 
 export function WidgetConfigurator() {
   const [copied, setCopied] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const { selectedAgent, updateAgent } = useAgentStore();
   const { isSaving, saveSettings } = useWidgetSettings(selectedAgent?.id || '');
+  const { toast } = useToast();
 
   if (!selectedAgent) return null;
 
-  // Dynamically construct the script src URL
-  const scriptSrc = `${import.meta.env.VITE_API_BASE_URL}/widget.js`;
+  const handlePreviewClick = async () => {
+    try {
+      const apiKeys = await getAPIKeys();
+      if (!apiKeys) {
+        toast({
+          title: 'Error',
+          description: 'API keys not configured. Please configure API keys in the admin settings.',
+          type: 'error'
+        });
+        return;
+      }
 
+      const requiredKey = selectedAgent.llmProvider === 'openai' ? apiKeys.openai : apiKeys.gemini;
+      if (!requiredKey) {
+        toast({
+          title: 'Error',
+          description: `${selectedAgent.llmProvider === 'openai' ? 'OpenAI' : 'Gemini'} API key not configured. Please configure in admin settings.`,
+          type: 'error'
+        });
+        return;
+      }
+
+      setIsPreviewOpen(true);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to initialize widget preview',
+        type: 'error'
+      });
+    }
+  };
+
+  // Get the current origin for the widget script
+  const origin = window.location.origin;
   const widgetCode = `<!-- AI Agent Widget -->
 <div id="ai-agent-widget"></div>
 <script>
@@ -31,7 +65,7 @@ export function WidgetConfigurator() {
     customColors: ${JSON.stringify(selectedAgent.widgetSettings.customColors, null, 2)},` : ''}
   };
 </script>
-<script src="${scriptSrc}" async defer></script>`;
+<script src="${origin}/widget.js" async defer></script>`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(widgetCode);
@@ -81,6 +115,13 @@ export function WidgetConfigurator() {
               {widgetCode}
             </pre>
           </div>
+
+          <button
+            onClick={handlePreviewClick}
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Preview Widget
+          </button>
         </div>
       </div>
 

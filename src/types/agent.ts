@@ -30,11 +30,11 @@ export interface TrainingExample {
 }
 
 export interface Interaction {
-  id?: string;
+  id: string;
   conversationId: string;
   query: string;
   response: string;
-  timestamp?: Date;
+  timestamp: Date;
   responseTime: number;
   successful: boolean;
 }
@@ -51,16 +51,16 @@ export interface Agent {
   responseStyle: ResponseStyle;
   interactionMode: InteractionMode;
   behaviorRules: string[];
-  apiKeys?: {
-    openai?: string;
-    gemini?: string;
-  };
   llmProvider: 'openai' | 'gemini';
   model: string;
   widgetSettings: WidgetSettings;
   trainingExamples: TrainingExample[];
   analytics: {
     interactions: Interaction[];
+  };
+  apiKeys: {
+    openai?: string;
+    gemini?: string;
   };
   createdAt?: FieldValue;
   updatedAt?: FieldValue;

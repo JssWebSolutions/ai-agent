@@ -1,4 +1,4 @@
-import{ useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PricingTable } from './PricingTable';
@@ -10,6 +10,8 @@ import { getUsageStats } from '../../services/subscription/usage';
 import { useToast } from '../../contexts/ToastContext';
 import { usePayment } from '../../hooks/usePayment';
 import { PaymentModal } from '../Payment/PaymentModal';
+import { getPaymentSettings } from '../../services/admin/paymentGateways';
+import { PaymentError } from '../../services/payment/errors';
 
 export function SubscriptionPage() {
   const { user, isAuthenticated } = useAuth();
@@ -32,10 +34,22 @@ export function SubscriptionPage() {
       return;
     }
 
-    const loadSubscriptionData = async () => {
+    const loadData = async () => {
       setLoading(true);
       try {
-        const usageData = await getUsageStats(user.id);
+        const [usageData, paymentSettings] = await Promise.all([
+          getUsageStats(user.id),
+          getPaymentSettings(),
+        ]);
+
+        if (!paymentSettings || !Object.values(paymentSettings).some((gateway) => gateway?.enabled)) {
+          toast({
+            title: 'Payment Not Available',
+            description: 'Payment system is not configured. Please contact support.',
+            type: 'error',
+          });
+        }
+
         if (usageData) {
           setUsage(usageData);
         }
@@ -51,17 +65,38 @@ export function SubscriptionPage() {
       }
     };
 
-    loadSubscriptionData();
+    loadData();
   }, [user, navigate, toast]);
 
-  const handlePlanSelect = (plan: Plan) => {
+  const handlePlanSelect = async (plan: Plan) => {
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    setSelectedPlan(plan);
-    setIsPaymentModalOpen(true);
+    try {
+      const paymentSettings = await getPaymentSettings();
+      if (!paymentSettings || !Object.values(paymentSettings).some((gateway) => gateway?.enabled)) {
+        throw new PaymentError('Payment system not configured', 'payment_not_configured');
+      }
+
+      setSelectedPlan(plan);
+      setIsPaymentModalOpen(true);
+    } catch (error: any) {
+      if (error instanceof PaymentError) {
+        toast({
+          title: 'Payment System Error',
+          description: error.message,
+          type: 'error',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to process plan selection. Please try again.',
+          type: 'error',
+        });
+      }
+    }
   };
 
   const handlePaymentSuccess = async () => {
@@ -76,6 +111,7 @@ export function SubscriptionPage() {
         type: 'success',
       });
     } catch (error: any) {
+      console.error('Payment error:', error);
       toast({
         title: 'Error',
         description: 'Payment failed. Please try again.',
@@ -168,8 +204,9 @@ export function SubscriptionPage() {
       {isPaymentModalOpen && selectedPlan && (
         <PaymentModal
           plan={selectedPlan}
+          isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
-          onPaymentSuccess={handlePaymentSuccess} isOpen={false} onSuccess={function (transactionId: string): void {
+          onPaymentSuccess={handlePaymentSuccess} onSuccess={function (_transactionId: string): void {
             throw new Error('Function not implemented.');
           } }        />
       )}
