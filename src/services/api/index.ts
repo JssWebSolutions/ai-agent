@@ -7,7 +7,7 @@ export async function getChatResponse(message: string, agent: Agent): Promise<st
   try {
     const apiKeys = await getAPIKeys();
     if (!apiKeys) {
-      throw new Error('API keys not configured. Please contact an administrator.');
+      throw new Error('API configuration not found. Please contact an administrator.');
     }
 
     if (agent.llmProvider === 'openai') {
@@ -23,6 +23,7 @@ export async function getChatResponse(message: string, agent: Agent): Promise<st
     }
   } catch (error: any) {
     console.error('API error:', error);
+    // Ensure we always throw an Error object with a message
     throw new Error(error.message || 'Failed to get response from AI service');
   }
 }

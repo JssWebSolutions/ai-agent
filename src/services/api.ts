@@ -2,25 +2,20 @@ import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Agent } from '../types/agent';
 import { getDefaultTrainingExamples, formatTrainingExamples } from './trainingData';
-import { getAPIKeys } from './admin/apiKeys';
+import { getAPICredentials } from './admin/apiCredentials';
 
 export async function getChatResponse(message: string, agent: Agent) {
-  // First get API keys
-  const apiKeys = await getAPIKeys();
-  if (!apiKeys) {
-    throw new Error('API configuration not found. Please contact an administrator.');
-  }
-
-  if (agent.llmProvider === 'openai') {
-    if (!apiKeys.openai) {
-      throw new Error('OpenAI API key is not configured. Please contact an administrator.');
+  try {
+    const apiKey = await getAPICredentials(agent.llmProvider);
+    
+    if (agent.llmProvider === 'openai') {
+      return getOpenAIResponse(message, agent, apiKey);
+    } else {
+      return getGeminiResponse(message, agent, apiKey);
     }
-    return getOpenAIResponse(message, agent, apiKeys.openai);
-  } else {
-    if (!apiKeys.gemini) {
-      throw new Error('Gemini API key is not configured. Please contact an administrator.');
-    }
-    return getGeminiResponse(message, agent, apiKeys.gemini);
+  } catch (error: any) {
+    console.error('API error:', error);
+    throw new Error('Please contact support to configure API settings');
   }
 }
 

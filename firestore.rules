@@ -48,5 +48,11 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && isAdmin();
     }
+
+    // API Settings collection
+    match /apiSettings/{provider} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isAdmin();
+    }
   }
 }

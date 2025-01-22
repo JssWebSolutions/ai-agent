@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Code, Copy, Check } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { AppearanceSettings } from './AppearanceSettings';
@@ -14,12 +14,24 @@ export function WidgetConfigurator() {
   const { selectedAgent, updateAgent } = useAgentStore();
   const { isSaving, saveSettings } = useWidgetSettings(selectedAgent?.id || '');
   const { toast } = useToast();
+  const [apiKeys, setApiKeys] = useState<any>(null);
+
+  useEffect(() => {
+    const loadApiKeys = async () => {
+      try {
+        const keys = await getAPIKeys();
+        setApiKeys(keys);
+      } catch (error) {
+        console.error('Failed to load API keys:', error);
+      }
+    };
+    loadApiKeys();
+  }, []);
 
   if (!selectedAgent) return null;
 
   const handlePreviewClick = async () => {
     try {
-      const apiKeys = await getAPIKeys();
       if (!apiKeys) {
         toast({
           title: 'Error',
@@ -32,7 +44,7 @@ export function WidgetConfigurator() {
       const requiredKey = selectedAgent.llmProvider === 'openai' ? apiKeys.openai : apiKeys.gemini;
       if (!requiredKey) {
         toast({
-          title: 'Error',
+          title: 'API Key Required',
           description: `${selectedAgent.llmProvider === 'openai' ? 'OpenAI' : 'Gemini'} API key not configured. Please configure in admin settings.`,
           type: 'error'
         });

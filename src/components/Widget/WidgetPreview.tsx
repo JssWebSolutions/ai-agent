@@ -3,7 +3,7 @@ import { Bot, X, Mic, Send, MicOff } from 'lucide-react';
 import { Agent } from '../../types/agent';
 import { useWidgetChat } from '../../hooks/useWidgetChat';
 import { LoadingSpinner } from '../LoadingSpinner';
-import { getAPIKeys } from '../../services/admin/apiKeys';
+import { getAPICredentials, validateCredentials, clearCredentials } from '../../services/admin/apiCredentials';
 import { useToast } from '../../contexts/ToastContext';
 
 interface WidgetPreviewProps {
@@ -29,45 +29,34 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
 
   useEffect(() => {
     if (isOpen) {
-      // Verify API keys when widget opens
-      const verifyApiKeys = async () => {
+      const verifyCredentials = async () => {
         try {
-          const apiKeys = await getAPIKeys();
-          if (!apiKeys) {
-            toast({
-              title: 'Error',
-              description: 'API keys not configured. Please configure API keys in the admin settings.',
-              type: 'error',
-            });
-            onToggle();
-            return;
-          }
+          const apiKey = await getAPICredentials(agent.llmProvider);
+          const isValid = await validateCredentials(agent.llmProvider, apiKey);
 
-          const requiredKey =
-            agent.llmProvider === 'openai' ? apiKeys.openai : apiKeys.gemini;
-          if (!requiredKey) {
+          if (!isValid) {
             toast({
-              title: 'Error',
-              description: `${
-                agent.llmProvider === 'openai' ? 'OpenAI' : 'Gemini'
-              } API key not configured. Please configure in admin settings.`,
-              type: 'error',
+              title: 'Configuration Required',
+              description: 'Please contact support to configure API settings',
+              type: 'error'
             });
             onToggle();
           }
         } catch (error: any) {
           toast({
-            title: 'Error',
-            description: error.message || 'Failed to verify API keys',
-            type: 'error',
+            title: 'Configuration Required',
+            description: 'Please contact support to configure API settings',
+            type: 'error'
           });
           onToggle();
+        } finally {
+          clearCredentials(agent.llmProvider);
         }
       };
 
-      verifyApiKeys();
+      verifyCredentials();
     }
-  }, [isOpen, agent, onToggle, toast]);
+  }, [isOpen, agent.llmProvider, onToggle, toast]);
 
   const positionClasses = {
     'bottom-right': 'bottom-4 right-4',

@@ -46,20 +46,34 @@ export async function getUsageStats(userId: string): Promise<Usage | null> {
     } as Usage;
   } catch (error) {
     console.error('Error getting usage stats:', error);
-    // Create default usage stats if there's an error
-    return {
-      userId,
-      period: {
-        start: new Date(),
-        end: new Date(new Date().setMonth(new Date().getMonth() + 1))
-      },
-      metrics: {
-        totalMessages: 0,
-        totalAgents: 0,
-        storageUsed: 0
-      },
-      notifications: []
-    };
+    return null;
+  }
+}
+
+export async function canCreateAgent(userId: string): Promise<boolean> {
+  if (!userId) return false;
+  
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      return false;
+    }
+
+    const user = userDoc.data() as User;
+    const planId = user.subscription?.planId || 'plan_free';
+    const plan = Object.values(PLANS).find(p => p.id === planId);
+
+    if (!plan) {
+      return false;
+    }
+
+    // Check if user has reached their plan's agent limit
+    return user.agentCount < plan.limits.agentsPerAccount;
+  } catch (error) {
+    console.error('Error checking agent creation limit:', error);
+    return false;
   }
 }
 
@@ -119,32 +133,5 @@ export async function incrementMessageCount(userId: string): Promise<boolean> {
   } catch (error) {
     console.error('Error incrementing message count:', error);
     return true; // Allow message to prevent blocking users
-  }
-}
-
-export async function canCreateAgent(userId: string): Promise<boolean> {
-  if (!userId) return false;
-  
-  try {
-    const userRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userRef);
-
-    if (!userDoc.exists()) {
-      return false;
-    }
-
-    const user = userDoc.data() as User;
-    const planId = user.subscription?.planId || 'plan_free';
-    const plan = Object.values(PLANS).find(p => p.id === planId);
-
-    if (!plan) {
-      return false;
-    }
-
-    // Check if user has reached their plan's agent limit
-    return user.agentCount < plan.limits.agentsPerAccount;
-  } catch (error) {
-    console.error('Error checking agent creation limit:', error);
-    return false;
   }
 }

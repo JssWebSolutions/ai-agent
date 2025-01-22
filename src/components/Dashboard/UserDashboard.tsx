@@ -7,13 +7,14 @@ import { DashboardMetrics } from './DashboardMetrics';
 import { DashboardCharts } from './DashboardCharts';
 import { RecentActivityPanel } from './RecentActivityPanel';
 import { AgentList } from '../Agents/AgentList';
-
+import { useToast } from '../../contexts/ToastContext';
 
 export function UserDashboard() {
   const { agents, createNewAgent, loadAgents } = useAgentStore();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   // Fetch agents on mount or when user ID changes
   useEffect(() => {
@@ -24,27 +25,36 @@ export function UserDashboard() {
         }
       } catch (error) {
         console.error('Error fetching agents:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load agents. Please try again.',
+          type: 'error'
+        });
       } finally {
         setIsLoading(false);
       }
     };
     fetchAgents();
-  }, [user?.id, loadAgents]);
+  }, [user?.id, loadAgents, toast]);
 
   // Create new agent handler
   const handleCreateAgent = async () => {
     if (!user?.id) return;
     setIsLoading(true);
     try {
-      const newAgent = await createNewAgent(user.id); // Get the newly created agent
-      navigate(`/agent/${newAgent.id}`);  // Redirect to the new agent's page
-    } catch (error) {
+      const newAgent = await createNewAgent(user.id);
+      navigate(`/agent/${newAgent.id}`);
+    } catch (error: any) {
       console.error('Error creating agent:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create agent. Please try again.',
+        type: 'error'
+      });
     } finally {
       setIsLoading(false);
     }
   };
-  
 
   // Loading state
   if (isLoading) {
@@ -55,7 +65,6 @@ export function UserDashboard() {
     );
   }
 
-  // Render UserDashboard
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Welcome message and actions */}

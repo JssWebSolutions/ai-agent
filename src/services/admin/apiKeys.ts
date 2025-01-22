@@ -1,7 +1,8 @@
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { encrypt, decrypt } from '../encryption';
 
+const SETTINGS_COLLECTION = 'settings';
 const API_KEYS_DOC = 'api-keys';
 
 interface APIKeys {
@@ -13,7 +14,7 @@ interface APIKeys {
 
 export async function getAPIKeys(): Promise<APIKeys | null> {
   try {
-    const docRef = doc(db, 'settings', API_KEYS_DOC);
+    const docRef = doc(db, SETTINGS_COLLECTION, API_KEYS_DOC);
     const docSnap = await getDoc(docRef);
     
     if (!docSnap.exists()) {
@@ -28,31 +29,23 @@ export async function getAPIKeys(): Promise<APIKeys | null> {
 
     // Safely decrypt each key if it exists
     if (data.openai) {
-      try {
-        const decryptedOpenAI = await decrypt(data.openai);
-        if (decryptedOpenAI) {
-          decryptedKeys.openai = decryptedOpenAI;
-        }
-      } catch (error) {
-        console.error('Error decrypting OpenAI key:', error);
+      const decryptedOpenAI = await decrypt(data.openai);
+      if (decryptedOpenAI) {
+        decryptedKeys.openai = decryptedOpenAI;
       }
     }
 
     if (data.gemini) {
-      try {
-        const decryptedGemini = await decrypt(data.gemini);
-        if (decryptedGemini) {
-          decryptedKeys.gemini = decryptedGemini;
-        }
-      } catch (error) {
-        console.error('Error decrypting Gemini key:', error);
+      const decryptedGemini = await decrypt(data.gemini);
+      if (decryptedGemini) {
+        decryptedKeys.gemini = decryptedGemini;
       }
     }
 
     return decryptedKeys;
   } catch (error) {
     console.error('Error getting API keys:', error);
-    throw error; // Propagate error for better error handling
+    throw error;
   }
 }
 
@@ -62,7 +55,7 @@ export async function updateAPIKeys(keys: Partial<APIKeys>, adminId: string): Pr
   }
 
   try {
-    const docRef = doc(db, 'settings', API_KEYS_DOC);
+    const docRef = doc(db, SETTINGS_COLLECTION, API_KEYS_DOC);
     const updateData: Record<string, any> = {
       updatedAt: new Date(),
       updatedBy: adminId
@@ -77,12 +70,7 @@ export async function updateAPIKeys(keys: Partial<APIKeys>, adminId: string): Pr
       updateData.gemini = keys.gemini ? await encrypt(keys.gemini) : null;
     }
 
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      await updateDoc(docRef, updateData);
-    } else {
-      await setDoc(docRef, updateData);
-    }
+    await setDoc(docRef, updateData, { merge: true });
   } catch (error) {
     console.error('Error updating API keys:', error);
     throw new Error('Failed to update API keys. Please try again.');
