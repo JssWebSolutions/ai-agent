@@ -2,6 +2,7 @@
 import { Volume2, Play } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
 import { useVoiceSynthesis } from '../../hooks/useVoiceSynthesis';
+import { VoiceAccent } from '@/types/agent';
 
 export function VoiceSettings() {
   const { selectedAgent, updateAgent } = useAgentStore();
@@ -100,7 +101,7 @@ export function VoiceSettings() {
               ...selectedAgent,
               voiceSettings: {
                 ...selectedAgent.voiceSettings,
-                accent: e.target.value
+                accent: e.target.value as VoiceAccent
               }
             })}
           >

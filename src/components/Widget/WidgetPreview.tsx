@@ -20,11 +20,9 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
   const {
     messages,
     inputMessage,
-    isListening,
+    isProcessing,
     setInputMessage,
     sendMessage,
-    startListening,
-    stopListening,
   } = useWidgetChat(agent);
 
   useEffect(() => {
@@ -106,6 +104,14 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
       setIsSubmitting(false);
     }
   };
+
+  function stopListening(_event: React.MouseEvent<HTMLButtonElement>): void {
+    throw new Error('Function not implemented.');
+  }
+
+  function startListening(_event: React.MouseEvent<HTMLButtonElement>): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
     <div className={`fixed ${positionClasses[settings.position]} z-50`}>
@@ -192,13 +198,13 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={isListening ? stopListening : startListening}
+                onClick={isProcessing ? stopListening : startListening}
                 className={`p-2 rounded-full transition-colors ${
-                  isListening ? 'bg-red-100 text-red-600' : 'hover:bg-gray-100'
+                  isProcessing ? 'bg-red-100 text-red-600' : 'hover:bg-gray-100'
                 }`}
                 disabled={isSubmitting}
               >
-                {isListening ? (
+                {isProcessing ? (
                   <MicOff className="w-5 h-5" />
                 ) : (
                   <Mic className="w-5 h-5" />

@@ -1,9 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Agent } from '../types/agent';
 import { getChatResponse } from '../services/api';
 import { useVoiceSynthesis } from './useVoiceSynthesis';
-import { useSpeechRecognition } from './useSpeechRecognition';
 import { useApiKeys } from './useApiKeys';
 import { useAgentStore } from '../store/agentStore';
 import { useLoadingToast } from './useLoadingToast';

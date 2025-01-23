@@ -31,8 +31,8 @@ export const defaultAgent: Omit<Agent, 'id'> = {
     interactions: [],
   },
   apiKeys: {
-    openai: undefined,
-    gemini: undefined
+    openai: null,
+    gemini: null
   }
 };
 

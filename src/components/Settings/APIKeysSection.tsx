@@ -1,6 +1,8 @@
 import{ useState } from 'react';
 import { Key, Eye, EyeOff } from 'lucide-react';
 import { useAgentStore } from '../../store/agentStore';
+import { AIModel } from '../../types/agent';
+  
 
 export function APIKeysSection() {
   const { selectedAgent, updateAgent } = useAgentStore();
@@ -18,24 +20,25 @@ export function APIKeysSection() {
     });
   };
 
+  
   const handleProviderChange = (provider: 'openai' | 'gemini') => {
-    if (!selectedAgent) return;
-    const models = provider === 'openai' 
-      ? ['gpt-3.5-turbo', 'gpt-4'] 
-      : ['gemini-pro'];
-    
-    updateAgent({
-      ...selectedAgent,
-      llmProvider: provider,
-      model: models[0]
-    });
-  };
+      if (!selectedAgent) return;
+      const models: AIModel[] = provider === 'openai' 
+        ? ['gpt-3.5-turbo', 'gpt-4'] 
+        : ['gemini-pro'];
+      
+      updateAgent({
+        ...selectedAgent,
+        llmProvider: provider,
+        model: models[0]
+      });
+    };
 
   const handleModelChange = (model: string) => {
     if (!selectedAgent) return;
     updateAgent({
       ...selectedAgent,
-      model
+      model: model as AIModel
     });
   };
 

@@ -62,16 +62,13 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
   try {
     // Create base agent data with defaults
     const baseAgent = {
+      id: doc(db, COLLECTIONS.AGENTS).id,
       userId: agent.userId,
       name: agent.name || 'New Agent',
       language: agent.language || 'en',
       firstMessage: agent.firstMessage || 'Hello! How can I help you today?',
       systemPrompt: agent.systemPrompt || 'You are a helpful AI assistant.',
       voiceSettings: {
-        gender: 'female',
-        pitch: 1,
-        speed: 1,
-        accent: 'neutral',
         ...agent.voiceSettings
       },
       responseStyle: agent.responseStyle || 'concise',
@@ -80,12 +77,6 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
       llmProvider: agent.llmProvider || 'openai',
       model: agent.model || 'gpt-3.5-turbo',
       widgetSettings: {
-        theme: 'light',
-        position: 'bottom-right',
-        buttonSize: 'medium',
-        borderRadius: 'medium',
-        showAgentImage: true,
-        customColors: null,
         ...(agent.widgetSettings || {})
       },
       trainingExamples: agent.trainingExamples || [],
@@ -96,7 +87,7 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
         openai: null,
         gemini: null
       },
-      image: agent.image || null,
+      image: agent.image || undefined,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
