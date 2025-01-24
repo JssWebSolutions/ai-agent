@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Agent Test 002</title>
+</head>
+<body>
+
+<h1>Its A Test 002</h1><!-- AI Agent Widget -->
+<div id="ai-agent-widget"></div>
+<script>
+  (function() {
+    window.voiceAIConfig = {
+      agentId: "7ypNwkD4iTQAmI2pzBV1",
+      theme: "light",
+      position: "bottom-left",
+      buttonSize: "medium",
+      borderRadius: "medium",
+      showAgentImage: true,
+      
+      apiUrl: "https://profound-puppy-3dac95.netlify.app/api"
+    };
+
+    var script = document.createElement('script');
+    script.src = "https://profound-puppy-3dac95.netlify.app/widget.js";
+    script.async = true;
+    script.defer = true;
+    script.crossOrigin = "anonymous";
+    document.body.appendChild(script);
+  })();
+</script>
+</body>
+</html>
+
+

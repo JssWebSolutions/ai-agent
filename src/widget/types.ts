@@ -12,6 +12,7 @@ export interface WidgetConfig {
   showAgentImage?: boolean;
   name?: string;
   image?: string;
+  apiUrl?: string;
 }
 
 export interface Message {

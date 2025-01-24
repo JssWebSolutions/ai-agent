@@ -19,6 +19,8 @@ export interface VoiceSettings {
   pitch: number;
   speed: number;
   accent: VoiceAccent;
+  volume: number;
+  rate: number;
 }
 
 export interface WidgetCustomColors {
@@ -81,6 +83,7 @@ export interface Agent {
   apiKeys: AgentAPIKeys;
   createdAt?: FieldValue;
   updatedAt?: FieldValue;
+  
 }
 
 export interface AgentCreationData extends Omit<Agent, 'id' | 'createdAt' | 'updatedAt'> {}
@@ -97,7 +100,9 @@ export const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
   gender: 'female',
   pitch: 1,
   speed: 1,
-  accent: 'neutral'
+  accent: 'neutral',
+  volume: 1,
+  rate: 1
 };
 
 export const DEFAULT_WIDGET_SETTINGS: WidgetSettings = {

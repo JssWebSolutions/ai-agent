@@ -105,14 +105,6 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
     }
   };
 
-  function stopListening(_event: React.MouseEvent<HTMLButtonElement>): void {
-    throw new Error('Function not implemented.');
-  }
-
-  function startListening(_event: React.MouseEvent<HTMLButtonElement>): void {
-    throw new Error('Function not implemented.');
-  }
-
   return (
     <div className={`fixed ${positionClasses[settings.position]} z-50`}>
       {isOpen ? (
@@ -196,20 +188,6 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
 
           <form onSubmit={handleSubmit} className="p-4 border-t">
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={isProcessing ? stopListening : startListening}
-                className={`p-2 rounded-full transition-colors ${
-                  isProcessing ? 'bg-red-100 text-red-600' : 'hover:bg-gray-100'
-                }`}
-                disabled={isSubmitting}
-              >
-                {isProcessing ? (
-                  <MicOff className="w-5 h-5" />
-                ) : (
-                  <Mic className="w-5 h-5" />
-                )}
-              </button>
               <input
                 type="text"
                 value={inputMessage}

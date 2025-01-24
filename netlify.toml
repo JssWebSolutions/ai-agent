@@ -3,16 +3,23 @@
 [build]
   command = "npm run build"  # Build command to generate the app
   publish = "dist"           # Folder where the built app resides
+  functions = "netlify/functions"  # Serverless functions directory
 
 [build.environment]
   NODE_VERSION = "20"        # Set Node.js version for the build process
 
 # Redirects for Single-Page Application (SPA)
 [[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = true  # Ensure all routes are handled by React Router (if needed)
+  force = true  # MUST be true to enable client-side routing
 
 # Headers configuration
 [[headers]]
@@ -25,6 +32,7 @@
   for = "/*.css"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"  # Cache CSS files for 1 year
+    Content-Type = "text/css"                             # Explicit MIME type for CSS
 
 [[headers]]
   for = "/index.html"
@@ -32,16 +40,21 @@
     Cache-Control = "no-cache"                            # Prevent caching of index.html for routing
 
 [[headers]]
-  for = "/assets/*.js"
+  for = "/assets/*"
   [headers.values]
-    Content-Type = "application/javascript"               # Explicit MIME type for JS in assets folder
-
-[[headers]]
-  for = "/assets/*.css"
-  [headers.values]
-    Content-Type = "text/css"                             # Explicit MIME type for CSS in assets folder
+    Cache-Control = "public, max-age=31536000, immutable"  # Cache assets for 1 year
 
 [[headers]]
   for = "/*"
   [headers.values]
-    Access-Control-Allow-Origin = "*"                     # Allow cross-origin requests for all routes
+    Access-Control-Allow-Origin = "*"                     # Allow cross-origin requests
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, X-Agent-ID"
+    Access-Control-Max-Age = "86400"
+
+[[headers]]
+  for = "/widget.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "application/javascript"
+    Access-Control-Allow-Origin = "*"
