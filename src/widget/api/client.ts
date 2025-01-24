@@ -8,8 +8,8 @@ export class WidgetApiClient {
 
   constructor(config: WidgetConfig) {
     this.agentId = config.agentId;
-    // Use provided apiUrl or default to current origin
-    this.apiUrl = config.apiUrl || window.location.origin + '/api';
+    // Ensure apiUrl ends with /api if not provided
+    this.apiUrl = config.apiUrl || `${window.location.origin}/api`;
   }
 
   async initialize() {
@@ -52,6 +52,7 @@ export class WidgetApiClient {
 
   async getAgentInfo(): Promise<AgentInfo> {
     try {
+      // Ensure we're using the correct path format
       const response = await fetch(`${this.apiUrl}/agents/${this.agentId}`, {
         headers: {
           'Content-Type': 'application/json',
