@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { Bot, X, Mic, Send, MicOff } from 'lucide-react';
+import { Bot, X, Send } from 'lucide-react';
 import { Agent } from '../../types/agent';
 import { useWidgetChat } from '../../hooks/useWidgetChat';
 import { LoadingSpinner } from '../LoadingSpinner';
@@ -20,7 +20,6 @@ export function WidgetPreview({ agent, isOpen, onToggle }: WidgetPreviewProps) {
   const {
     messages,
     inputMessage,
-    isProcessing,
     setInputMessage,
     sendMessage,
   } = useWidgetChat(agent);

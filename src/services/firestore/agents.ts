@@ -205,7 +205,9 @@ export function getDefaultAgent(userId: string): Omit<Agent, 'id'> {
       gender: 'female',
       pitch: 0,
       speed: 1,
-      accent: 'neutral'
+      accent: 'neutral',
+      volume: 0,
+      rate: 0
     },
     responseStyle: 'detailed',
     interactionMode: 'informative',

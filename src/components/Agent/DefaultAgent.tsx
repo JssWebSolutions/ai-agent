@@ -12,6 +12,8 @@ export const defaultAgent: Omit<Agent, 'id'> = {
     pitch: 1,
     speed: 1,
     accent: "neutral",
+    volume: 0,
+    rate: 0
   },
   responseStyle: "concise",
   interactionMode: "informative",
