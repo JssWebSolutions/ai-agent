@@ -8,25 +8,18 @@ import { Plan, Usage } from '../../types/subscription';
 import { PLANS } from '../../services/subscription/plans';
 import { getUsageStats } from '../../services/subscription/usage';
 import { useToast } from '../../contexts/ToastContext';
-import { usePayment } from '../../hooks/usePayment';
 import { PaymentModal } from '../Payment/PaymentModal';
 import { getPaymentSettings } from '../../services/admin/paymentGateways';
-import { PaymentError } from '../../services/payment/errors';
 
 export function SubscriptionPage() {
   const { user, isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { handlePayment } = usePayment();
-  const [currentPlan, setCurrentPlan] = useState<Plan>(PLANS.free);
-  const [usage, setUsage] = useState<Usage | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-
-  const billingInterval = location.state?.billingInterval || 'monthly';
+  const [loading, setLoading] = useState(true);
+  const [usage, setUsage] = useState<Usage | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -69,56 +62,25 @@ export function SubscriptionPage() {
   }, [user, navigate, toast]);
 
   const handlePlanSelect = async (plan: Plan) => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    try {
-      const paymentSettings = await getPaymentSettings();
-      if (!paymentSettings || !Object.values(paymentSettings).some((gateway) => gateway?.enabled)) {
-        throw new PaymentError('Payment system not configured', 'payment_not_configured');
-      }
-
-      setSelectedPlan(plan);
-      setIsPaymentModalOpen(true);
-    } catch (error: any) {
-      if (error instanceof PaymentError) {
-        toast({
-          title: 'Payment System Error',
-          description: error.message,
-          type: 'error',
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to process plan selection. Please try again.',
-          type: 'error',
-        });
-      }
-    }
+    setSelectedPlan(plan);
+    setIsPaymentModalOpen(true);
   };
 
-  const handlePaymentSuccess = async () => {
-    if (!selectedPlan) return;
-
+  const handlePaymentSuccess = async (transactionId: string) => {
     try {
-      await handlePayment(selectedPlan, { card: user?.id });
-      setCurrentPlan(selectedPlan);
       toast({
         title: 'Success',
-        description: `You've successfully subscribed to the ${selectedPlan.name} plan.`,
-        type: 'success',
+        description: 'Your subscription has been updated successfully',
+        type: 'success'
       });
+      setIsPaymentModalOpen(false);
+      navigate('/user');
     } catch (error: any) {
-      console.error('Payment error:', error);
       toast({
         title: 'Error',
-        description: 'Payment failed. Please try again.',
-        type: 'error',
+        description: error.message || 'Failed to update subscription',
+        type: 'error'
       });
-    } finally {
-      setIsPaymentModalOpen(false);
     }
   };
 
@@ -132,83 +94,24 @@ export function SubscriptionPage() {
 
   return (
     <div>
-      {/* Navigation Menu */}
-      <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex-shrink-0">
-              <span className="text-2xl font-bold text-blue-600">AI Agent</span>
-            </div>
-            <div className="hidden md:flex space-x-8">
-              {isAuthenticated ? (
-                <button
-                  onClick={() => navigate('/user')}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                >
-                  Dashboard
-                </button>
-              ) : (
-                <button
-                  onClick={() => navigate('/auth')}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                >
-                  Login
-                </button>
-              )}
-            </div>
-            <button
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? 'Close' : 'Menu'}
-            </button>
-          </div>
-        </div>
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100">
-            <div className="px-4 py-2 space-y-2">
-              {isAuthenticated ? (
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="block w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                >
-                  Dashboard
-                </button>
-              ) : (
-                <button
-                  onClick={() => navigate('/auth')}
-                  className="block w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                >
-                  Login
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Main Content */}
       <div className="text-center space-y-8 mt-20">
         <h2 className="text-3xl font-bold text-gray-900">Subscription & Usage</h2>
-        <p className="text-lg text-gray-600">No credit card required.</p>
+        <p className="text-lg text-gray-600">Choose the plan that's right for you</p>
         <PricingTable
           onSelectPlan={handlePlanSelect}
-          currentPlan={currentPlan}
-          billingInterval={billingInterval}
+          currentPlan={PLANS[user?.subscription?.planId || 'free']}
         />
-        {usage && <UsageStats usage={usage} plan={currentPlan} />}
+        {usage && <UsageStats usage={usage} plan={PLANS[user?.subscription?.planId || 'free']} />}
         <BillingHistory invoices={[]} />
       </div>
 
-      {/* Payment Modal */}
-      {isPaymentModalOpen && selectedPlan && (
+      {selectedPlan && (
         <PaymentModal
           plan={selectedPlan}
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
-          onPaymentSuccess={handlePaymentSuccess} onSuccess={function (_transactionId: string): void {
-            throw new Error('Function not implemented.');
-          } }        />
+          onSuccess={handlePaymentSuccess}
+        />
       )}
     </div>
   );

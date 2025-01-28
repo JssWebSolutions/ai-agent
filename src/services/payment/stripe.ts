@@ -14,14 +14,23 @@ const getStripe = () => {
 };
 
 export async function createPaymentIntent(plan: Plan): Promise<string> {
+  // Validate Stripe configuration
   if (!STRIPE_CONFIG.PUBLIC_KEY) {
     throw new PaymentError(
-      'Payment system is not configured. Please try again later.',
+      'Payment system is not configured. Please check your Stripe configuration.',
       'stripe_not_configured'
     );
   }
 
   try {
+    // Validate plan data
+    if (!plan || !plan.price || !plan.price.monthly) {
+      throw new PaymentError(
+        'Invalid plan data provided',
+        'invalid_plan_data'
+      );
+    }
+
     const response = await fetch(`${STRIPE_CONFIG.API_URL}${STRIPE_CONFIG.ENDPOINTS.CREATE_INTENT}`, {
       method: 'POST',
       headers: { 
@@ -45,14 +54,22 @@ export async function createPaymentIntent(plan: Plan): Promise<string> {
     }
 
     const { clientSecret } = await response.json();
+    if (!clientSecret) {
+      throw new PaymentError(
+        'Invalid response from payment server',
+        'invalid_response'
+      );
+    }
+
     return clientSecret;
   } catch (error) {
     if (error instanceof PaymentError) {
       throw error;
     }
 
+    console.error('Payment initialization error:', error);
     throw new PaymentError(
-      'Failed to initialize payment. Please try again.',
+      'Failed to initialize payment. Please check your connection and try again.',
       'payment_failed'
     );
   }
@@ -67,11 +84,16 @@ export async function processPayment(
   if (!stripe) {
     return {
       success: false,
-      error: 'Payment system is not configured'
+      error: 'Payment system is not properly configured. Please check Stripe settings.'
     };
   }
 
   try {
+    // Validate client secret
+    if (!clientSecret) {
+      throw new Error('Invalid payment session');
+    }
+
     const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: paymentMethod.card,
@@ -80,20 +102,29 @@ export async function processPayment(
     });
 
     if (error) {
+      console.error('Payment confirmation error:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message || 'Payment failed. Please try again.'
+      };
+    }
+
+    if (!paymentIntent) {
+      return {
+        success: false,
+        error: 'Payment confirmation failed'
       };
     }
 
     return {
       success: true,
-      transactionId: paymentIntent?.id
+      transactionId: paymentIntent.id
     };
   } catch (error) {
+    console.error('Payment processing error:', error);
     return {
       success: false,
-      error: 'An unexpected error occurred during payment processing'
+      error: 'An unexpected error occurred during payment processing. Please try again.'
     };
   }
 }

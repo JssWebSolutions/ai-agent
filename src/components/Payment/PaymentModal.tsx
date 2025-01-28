@@ -1,47 +1,48 @@
-import{ useState, useEffect } from 'react';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { useState, useEffect } from 'react';
 import { Plan } from '../../types/subscription';
-import { PaymentForm } from './PaymentForm';
-import { createPaymentIntent } from '../../services/payment/stripe';
+import { PaymentProcessor } from './PaymentProcessor';
 import { useToast } from '../../contexts/ToastContext';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+import { validatePaymentGateway } from '../../services/payment/paymentService';
 
 export interface PaymentModalProps {
   plan: Plan;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (transactionId: string) => void;
-  onPaymentSuccess: () => Promise<void>;
 }
 
 export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalProps) {
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (isOpen) {
-      initializePayment();
-    }
-  }, [isOpen, plan]);
+    const validatePayment = async () => {
+      try {
+        const isValid = await validatePaymentGateway('paypal');
+        if (!isValid) {
+          toast({
+            title: 'Error',
+            description: 'PayPal payment system is not properly configured',
+            type: 'error'
+          });
+          onClose();
+        }
+      } catch (error: any) {
+        toast({
+          title: 'Error',
+          description: error.message || 'Failed to initialize payment',
+          type: 'error'
+        });
+        onClose();
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const initializePayment = async () => {
-    try {
-      const secret = await createPaymentIntent(plan);
-      setClientSecret(secret);
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to initialize payment',
-        type: 'error'
-      });
-      onClose();
-    } finally {
-      setLoading(false);
+    if (isOpen) {
+      validatePayment();
     }
-  };
+  }, [isOpen, onClose, toast]);
 
   if (!isOpen) return null;
 
@@ -54,17 +55,12 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
           <div className="flex justify-center py-8">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
-        ) : clientSecret ? (
-          <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <PaymentForm
-              plan={plan}
-              clientSecret={clientSecret}
-              onSuccess={onSuccess}
-              onCancel={onClose}
-            />
-          </Elements>
         ) : (
-          <div className="text-red-600">Failed to initialize payment</div>
+          <PaymentProcessor
+            plan={plan}
+            onSuccess={onSuccess}
+            onCancel={onClose}
+          />
         )}
       </div>
     </div>

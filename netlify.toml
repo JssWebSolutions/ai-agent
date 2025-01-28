@@ -15,6 +15,14 @@
   status = 200
   force = true
 
+# Handle payment intent creation specifically
+[[redirects]]
+  from = "/create-payment-intent"
+  to = "/.netlify/functions/api/create-payment-intent"
+  status = 200
+  force = true
+
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -49,7 +57,7 @@
   [headers.values]
     Access-Control-Allow-Origin = "*"                     # Allow cross-origin requests
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type, X-Agent-ID"
+    Access-Control-Allow-Headers = "Content-Type, X-Agent-ID, Authorization"
     Access-Control-Max-Age = "86400"
 
 [[headers]]
