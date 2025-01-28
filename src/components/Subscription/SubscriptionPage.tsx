@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { PricingTable } from './PricingTable';
 import { UsageStats } from './UsageStats';
 import { BillingHistory } from './BillingHistory';
@@ -12,8 +12,7 @@ import { PaymentModal } from '../Payment/PaymentModal';
 import { getPaymentSettings } from '../../services/admin/paymentGateways';
 
 export function SubscriptionPage() {
-  const { user, isAuthenticated } = useAuth();
-  const location = useLocation();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
@@ -66,7 +65,7 @@ export function SubscriptionPage() {
     setIsPaymentModalOpen(true);
   };
 
-  const handlePaymentSuccess = async (transactionId: string) => {
+  const handlePaymentSuccess = async () => {
     try {
       toast({
         title: 'Success',
@@ -99,9 +98,9 @@ export function SubscriptionPage() {
         <p className="text-lg text-gray-600">Choose the plan that's right for you</p>
         <PricingTable
           onSelectPlan={handlePlanSelect}
-          currentPlan={PLANS[user?.subscription?.planId || 'free']}
+          currentPlan={PLANS[user?.subscription?.planId as keyof typeof PLANS || 'free']}
         />
-        {usage && <UsageStats usage={usage} plan={PLANS[user?.subscription?.planId || 'free']} />}
+        {usage && <UsageStats usage={usage} plan={PLANS[user?.subscription?.planId as keyof typeof PLANS || 'free']} />}
         <BillingHistory invoices={[]} />
       </div>
 

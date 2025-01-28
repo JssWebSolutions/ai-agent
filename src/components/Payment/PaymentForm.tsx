@@ -3,7 +3,6 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Plan } from '../../types/subscription';
 import { processPayment } from '../../services/payment/stripe';
 import { useToast } from '../../contexts/ToastContext';
-import { validateStripeConfig } from '../../services/payment/config';
 
 interface PaymentFormProps {
   plan: Plan;
@@ -28,10 +27,9 @@ export function PaymentForm({ plan, clientSecret, onSuccess, onCancel }: Payment
     }
 
     if (!validateStripeConfig()) {
-      setError('Payment system is not properly configured. Please contact support.');
+      setError('Invalid Stripe configuration.');
       return;
     }
-
     setProcessing(true);
     setError(null);
 
@@ -134,4 +132,31 @@ export function PaymentForm({ plan, clientSecret, onSuccess, onCancel }: Payment
       </div>
     </form>
   );
+}
+
+function validateStripeConfig(): boolean {
+  // Define required environment variables or configurations
+  const requiredConfig = [
+    process.env.REACT_APP_STRIPE_PUBLIC_KEY,
+    process.env.REACT_APP_STRIPE_SECRET_KEY,
+    process.env.REACT_APP_STRIPE_WEBHOOK_SECRET,
+  ];
+
+  // Check if any required configuration is missing
+  const missingConfig = requiredConfig.some((config) => !config);
+
+  if (missingConfig) {
+    console.error("Stripe configuration is incomplete. Please check your environment variables.");
+    return false;
+  }
+
+  // Perform additional validation if needed (e.g., key formats)
+  const publicKeyPattern = /^pk_live_/; // Example: public keys should start with 'pk_live_'
+  if (!publicKeyPattern.test(process.env.REACT_APP_STRIPE_PUBLIC_KEY!)) {
+    console.error("Invalid Stripe public key. Make sure it starts with 'pk_live_'.");
+    return false;
+  }
+
+  // All validations passed
+  return true;
 }

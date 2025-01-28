@@ -2,7 +2,7 @@ import { Plan } from '../../../types/subscription';
 import { PaymentError } from '../errors';
 
 export async function processPayPalPayment(
-  plan: Plan,
+  _plan: Plan,
   paymentData: any,
   settings: { clientId: string; clientSecret: string; mode: 'sandbox' | 'live' }
 ): Promise<{ success: boolean; transactionId?: string; error?: string }> {

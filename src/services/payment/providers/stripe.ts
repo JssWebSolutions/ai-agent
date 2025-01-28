@@ -3,7 +3,7 @@ import { PaymentError } from '../errors';
 import { loadStripe } from '@stripe/stripe-js';
 
 export async function processStripePayment(
-  plan: Plan,
+  _plan: Plan,
   paymentData: any,
   settings: { publishableKey: string; secretKey: string }
 ): Promise<{ success: boolean; transactionId?: string; error?: string }> {

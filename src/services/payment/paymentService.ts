@@ -1,5 +1,3 @@
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../config/firebase';
 import { Plan } from '../../types/subscription';
 import { PaymentError } from './errors';
 import { getPaymentSettings } from '../admin/paymentGateways';
@@ -16,13 +14,11 @@ export interface PaymentGatewayStatus {
 export async function getActivePaymentGateways(): Promise<PaymentGatewayStatus> {
   try {
     const settings = await getPaymentSettings();
-    if (!settings) {
-      return {
-        stripe: settings?.stripe?.enabled || false,
-        paypal: settings?.paypal?.enabled || false,
-        razorpay: settings?.razorpay?.enabled || false
-      };
-    }
+    return {
+      stripe: settings?.stripe?.enabled || false,
+      paypal: settings?.paypal?.enabled || false,
+      razorpay: settings?.razorpay?.enabled || false
+    };
   } catch (error) {
     console.error('Error getting payment gateways:', error);
     throw new PaymentError('Failed to get payment settings', 'settings_error');

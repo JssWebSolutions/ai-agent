@@ -1,4 +1,10 @@
 import { useEffect } from 'react';
+
+declare global {
+  interface Window {
+    paypal: any;
+  }
+}
 import { Plan } from '../../../types/subscription';
 import { LoadingSpinner } from '../../LoadingSpinner';
 

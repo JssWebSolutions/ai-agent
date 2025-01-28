@@ -57,9 +57,7 @@ export function SubscriptionManager({
       plan={selectedPlan}
       isOpen={isOpen}
       onClose={onClose}
-      onPaymentSuccess={handlePaymentSuccess} // Ensure consistent prop usage
-      onSuccess={function (_transactionId: string): void {
-        throw new Error('Function not implemented.');
-      } }    />
+      onSuccess={handlePaymentSuccess} // Ensure consistent prop usage
+      />
   );
 }

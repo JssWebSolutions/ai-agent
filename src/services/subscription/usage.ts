@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, FieldPath } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { Usage } from '../../types/subscription';
 import { PLANS } from './plans';
@@ -10,43 +10,43 @@ export async function getUsageStats(userId: string): Promise<Usage | null> {
   try {
     const usageRef = doc(db, 'usage', userId);
     const usageDoc = await getDoc(usageRef);
-    
+
+    // Create default usage document if it doesn't exist
+    const defaultUsage: Usage = {
+      userId,
+      period: {
+        start: new Date(),
+        end: new Date(new Date().setMonth(new Date().getMonth() + 1))
+      },
+      metrics: {
+        totalMessages: 0,
+        totalAgents: 0,
+        storageUsed: 0
+      },
+      notifications: []
+    };
+
     if (!usageDoc.exists()) {
-      // Create default usage stats if none exist
-      const defaultUsage: Usage = {
-        userId,
-        period: {
-          start: new Date(),
-          end: new Date(new Date().setMonth(new Date().getMonth() + 1))
-        },
-        metrics: {
-          totalMessages: 0,
-          totalAgents: 0,
-          storageUsed: 0
-        },
-        notifications: []
-      };
-      
-      await setDoc(usageRef, {
-        ...defaultUsage,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
       return defaultUsage;
     }
 
-    const data = usageDoc.data();
-    return {
-      ...data,
-      userId,
-      period: {
-        start: data.period.start.toDate(),
-        end: data.period.end.toDate()
-      }
-    } as Usage;
+    const data = usageDoc.data() || defaultUsage;
+    return data as Usage;
   } catch (error) {
     console.error('Error getting usage stats:', error);
-    return null;
+    return {
+      userId,
+      period: {
+        start: new Date(),
+        end: new Date(new Date().setMonth(new Date().getMonth() + 1))
+      },
+      metrics: {
+        totalMessages: 0,
+        totalAgents: 0,
+        storageUsed: 0
+      },
+      notifications: []
+    };
   }
 }
 
@@ -121,12 +121,12 @@ export async function incrementMessageCount(userId: string): Promise<boolean> {
         notifications: [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
-      });
+      }, { merge: true });
     } else {
       await updateDoc(usageRef, {
-        'metrics.totalMessages': increment(1),
+        [new FieldPath('metrics', 'totalMessages')]: increment(1),
         updatedAt: serverTimestamp()
-      });
+      }, { merge: true });
     }
 
     return true;

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { initializeFirestoreCollections, checkCollections } from './services/database/initializeCollections';
 import { useAuth } from './contexts/AuthContext';
 import { AuthForm } from './components/Auth/AuthForm';
 import { AdminDashboard } from './components/Admin/AdminDashboard';
@@ -48,6 +50,21 @@ export default function App() {
   const handleToggleAuthMode = () => {
     setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
   };
+
+  useEffect(() => {
+    const initializeCollections = async () => {
+      try {
+        const collectionsExist = await checkCollections();
+        if (!collectionsExist) {
+          await initializeFirestoreCollections();
+        }
+      } catch (error) {
+        console.error('Error initializing collections:', error);
+      }
+    };
+
+    initializeCollections();
+  }, []);
 
   return (
     <Routes>

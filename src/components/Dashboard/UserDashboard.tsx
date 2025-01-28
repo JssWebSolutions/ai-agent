@@ -46,9 +46,13 @@ export function UserDashboard() {
       navigate(`/agent/${newAgent.id}`);
     } catch (error: any) {
       console.error('Error creating agent:', error);
+      let errorMessage = 'Failed to create agent. Please try again.';
+      if (error.code === 'invalid-argument') {
+        errorMessage = 'Invalid argument provided. Please check your input and try again.';
+      }
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create agent. Please try again.',
+        description: errorMessage,
         type: 'error'
       });
     } finally {
