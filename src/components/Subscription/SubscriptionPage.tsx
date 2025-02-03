@@ -92,16 +92,30 @@ export function SubscriptionPage() {
   }
 
   return (
-    <div>
-      <div className="text-center space-y-8 mt-20">
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-gray-900">Subscription & Usage</h2>
-        <p className="text-lg text-gray-600">Choose the plan that's right for you</p>
-        <PricingTable
-          onSelectPlan={handlePlanSelect}
-          currentPlan={PLANS[user?.subscription?.planId as keyof typeof PLANS || 'free']}
-        />
-        {usage && <UsageStats usage={usage} plan={PLANS[user?.subscription?.planId as keyof typeof PLANS || 'free']} />}
-        <BillingHistory invoices={[]} />
+        <p className="mt-2 text-lg text-gray-600">Choose the plan that's right for you</p>
+
+        <div className="mt-12 space-y-12">
+          <PricingTable
+            onSelectPlan={handlePlanSelect}
+            currentPlan={PLANS[user?.subscription?.planId as keyof typeof PLANS || 'free']}
+          />
+          
+          {usage && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <UsageStats 
+                usage={usage} 
+                plan={PLANS[user?.subscription?.planId as keyof typeof PLANS || 'free']} 
+              />
+            </div>
+          )}
+          
+          <div className="bg-white rounded-lg shadow">
+            <BillingHistory invoices={[]} />
+          </div>
+        </div>
       </div>
 
       {selectedPlan && (

@@ -1,4 +1,4 @@
-import { ArrowRight, Bot, CheckCircle, MessageSquare, Zap, Shield } from 'lucide-react';
+import { ArrowRight, Bot, CheckCircle, MessageSquare, Zap, Shield, ShoppingBag, Heart, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -181,6 +181,146 @@ export function ModernLandingPage() {
                     <h4 className="font-semibold text-gray-900">{testimonial.author}</h4>
                     <p className="text-sm text-gray-500">{testimonial.role}</p>
                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Widget Preview Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-50 to-white relative">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Experience Our AI Chat Widget
+            </h2>
+            <p className="text-xl text-gray-600">
+              Try our interactive AI chat widget and see how it can transform your customer interactions
+            </p>
+          </div>
+          
+          <div className="relative">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-4xl mx-auto">
+              <div className="aspect-video relative bg-gray-100 rounded-lg overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&h=800&fit=crop"
+                  alt="Widget Preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-4 right-4 w-72 h-96 bg-white rounded-lg shadow-2xl border border-gray-200">
+                  <div className="p-4 bg-blue-600 text-white rounded-t-lg">
+                    <h3 className="font-medium">AI Assistant</h3>
+                  </div>
+                  <div className="p-4">
+                    <div className="space-y-4">
+                      <div className="flex gap-2">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                          <Bot className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="bg-gray-100 rounded-lg p-3 flex-1">
+                          <p className="text-sm">Hello! How can I assist you today?</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Integration Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Simple Integration
+            </h2>
+            <p className="text-xl text-gray-600">
+              Add our AI chat widget to your website with just a few lines of code
+            </p>
+          </div>
+          
+          <div className="bg-gray-900 rounded-xl p-8 max-w-3xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex space-x-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              </div>
+              <div className="text-gray-400 text-sm">widget-integration.html</div>
+            </div>
+            <pre className="text-gray-300 text-sm overflow-x-auto">
+              <code>{`<!-- AI Agent Widget -->
+<div id="ai-agent-widget"></div>
+<script>
+  (function() {
+    window.voiceAIConfig = {
+      agentId: "your-agent-id",
+      theme: "light",
+      position: "bottom-right"
+    };
+    
+    var script = document.createElement('script');
+    script.src = "https://your-domain.com/widget.js";
+    script.async = true;
+    document.body.appendChild(script);
+  })();
+</script>`}</code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Perfect For Every Industry
+            </h2>
+            <p className="text-xl text-gray-600">
+              See how our AI agents can transform your business
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                title: 'E-commerce',
+                description: 'Provide 24/7 customer support, product recommendations, and order tracking',
+                icon: <ShoppingBag className="w-6 h-6 text-purple-500" />,
+                image: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&h=300&fit=crop'
+              },
+              {
+                title: 'Healthcare',
+                description: 'Schedule appointments, answer medical queries, and provide care information',
+                icon: <Heart className="w-6 h-6 text-red-500" />,
+                image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop'
+              },
+              {
+                title: 'Education',
+                description: 'Support students with course information, study resources, and academic guidance',
+                icon: <GraduationCap className="w-6 h-6 text-blue-500" />,
+                image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=300&fit=crop'
+              }
+            ].map((useCase, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div className="h-48 overflow-hidden">
+                  <img 
+                    src={useCase.image} 
+                    alt={useCase.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-6">
+                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center mb-4">
+                    {useCase.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{useCase.title}</h3>
+                  <p className="text-gray-600">{useCase.description}</p>
                 </div>
               </div>
             ))}

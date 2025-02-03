@@ -41,15 +41,17 @@ export function UserDashboard() {
   const handleCreateAgent = async () => {
     if (!user?.id) return;
     setIsLoading(true);
+    
     try {
+      if (!user.subscription?.planId) {
+        throw new Error('No subscription plan found');
+      }
+
       const newAgent = await createNewAgent(user.id);
       navigate(`/agent/${newAgent.id}`);
     } catch (error: any) {
       console.error('Error creating agent:', error);
-      let errorMessage = 'Failed to create agent. Please try again.';
-      if (error.code === 'invalid-argument') {
-        errorMessage = 'Invalid argument provided. Please check your input and try again.';
-      }
+      const errorMessage = error.message || 'Failed to create agent. Please try again.';
       toast({
         title: 'Error',
         description: errorMessage,

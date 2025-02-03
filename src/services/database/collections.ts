@@ -1,9 +1,9 @@
 export const COLLECTIONS = {
   USERS: 'users',
   AGENTS: 'agents',
-  SETTINGS: 'settings',
-  USAGE: 'usage',
-  USER_COUNTS: 'userCounts',
+  SETTINGS: 'settings', // Admin only
+  USAGE: 'usage', // User specific
+  USER_COUNTS: 'userCounts', // Admin only
 } as const;
 
 export const SYSTEM_DOCUMENTS = {

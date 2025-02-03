@@ -1,13 +1,22 @@
 import { doc, getDoc, setDoc, updateDoc, DocumentData } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { User } from '../../types/auth';
+import { PLANS } from '../subscription/plans';
 import { COLLECTIONS } from '../database/collections';
 
 export async function createUserDocument(userId: string, userData: Omit<User, 'id'>): Promise<void> {
   try {
     const userRef = doc(db, COLLECTIONS.USERS, userId);
+    const subscription = {
+      planId: PLANS.free.id,
+      status: 'active',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
     await setDoc(userRef, {
       ...userData,
+      subscription,
       createdAt: new Date(),
       lastLogin: new Date(),
       updatedAt: new Date(),

@@ -6,6 +6,9 @@ import {
 import { auth } from '../../config/firebase';
 import { createUserDocument, getUserDocument } from './userService';
 import { User } from '../../types/auth';
+import { createAgent } from '../firestore/agents';
+import { defaultAgent } from '../../components/Agent/DefaultAgent';
+import { PLANS, PlanTier } from '../subscription/plans';
 import { validateEmail, validatePassword, validateName } from './validation';
 import { AuthError, handleAuthError } from './errors';
 import { sendVerificationEmail } from './emailVerification';
@@ -40,10 +43,25 @@ export async function signUpWithEmail(email: string, password: string, name: str
       agentCount: 0,
       lastLogin: new Date(),
       emailVerified: false,
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      subscription: {
+        planId: PLANS.free.id as PlanTier,
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
     };
 
     await createUserDocument(firebaseUser.uid, userData);
+    
+    // Create default agent
+    const agentData = {
+      ...defaultAgent,
+      userId: firebaseUser.uid,
+      name: "My First Assistant"
+    };
+    await createAgent(agentData);
+    
     await sendVerificationEmail(firebaseUser);
 
     return { ...userData, id: firebaseUser.uid };

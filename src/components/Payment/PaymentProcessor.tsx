@@ -7,6 +7,10 @@ import { RazorpayPaymentForm } from './providers/RazorpayPaymentForm';
 import { processPayment } from '../../services/payment/paymentService';
 import { useToast } from '../../contexts/ToastContext';
 import { loadPaymentScript } from '../../services/payment/config';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 interface PaymentProcessorProps {
   plan: Plan;
@@ -79,12 +83,14 @@ export function PaymentProcessor({ plan, onSuccess, onCancel }: PaymentProcessor
     switch (selectedGateway) {
       case 'stripe':
         return (
-          <StripePaymentForm
-            plan={plan}
-            onSubmit={handlePayment}
-            onCancel={onCancel}
-            processing={processing}
-          />
+          <Elements stripe={stripePromise}>
+            <StripePaymentForm
+              plan={plan}
+              onSubmit={handlePayment}
+              onCancel={onCancel}
+              processing={processing}
+            />
+          </Elements>
         );
       case 'paypal':
         return (

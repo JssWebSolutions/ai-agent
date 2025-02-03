@@ -16,7 +16,8 @@ import {
 import { db } from '../../config/firebase';
 import { Agent, Interaction } from '../../types/agent';
 import { COLLECTIONS } from '../database/collections';
-import { agentConverter } from './converters';
+import { agentConverter } from './converters'; 
+import { doc, setDoc } from 'firebase/firestore';
 import { updateUserAgentCount } from '../auth/userService';
 
 export interface FirestoreAgent extends Agent {
@@ -56,7 +57,6 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
   try {
     // Create base agent data with defaults
     const baseAgent = {
-      id: doc(db, COLLECTIONS.AGENTS).id,
       userId: agent.userId,
       name: agent.name || 'New Agent',
       language: agent.language || 'en',
@@ -72,7 +72,12 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
       },
       responseStyle: agent.responseStyle || 'concise',
       interactionMode: agent.interactionMode || 'informative',
-      behaviorRules: agent.behaviorRules || [],
+      behaviorRules: agent.behaviorRules || [
+        "Always be helpful and friendly",
+        "Maintain your assigned identity",
+        "Use appropriate language and tone", 
+        "Be concise but informative"
+      ],
       llmProvider: agent.llmProvider || 'openai',
       model: agent.model || 'gpt-3.5-turbo',
       widgetSettings: {
@@ -91,25 +96,35 @@ export async function createAgent(agent: Omit<Agent, 'id'>): Promise<string> {
         openai: null,
         gemini: null
       },
-      image: agent.image || undefined,
+      image: agent.image || null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
 
     const agentsRef = collection(db, COLLECTIONS.AGENTS).withConverter(agentConverter);
-    const docRef = await addDoc(agentsRef, baseAgent);
+    const docRef = doc(agentsRef);
+    const newAgent = {
+      ...baseAgent,
+      id: docRef.id
+    };
+
+    await setDoc(docRef, {
+      ...newAgent
+    });
     
     try {
       await updateUserAgentCount(agent.userId, 1);
     } catch (error) {
       console.error('Error updating user agent count:', error);
-      // Continue even if count update fails
     }
     
     return docRef.id;
   } catch (error) {
     console.error('Error creating agent:', error);
-    throw new Error('Failed to create agent');
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Failed to create agent: Unknown error');
   }
 }
 

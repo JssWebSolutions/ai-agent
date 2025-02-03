@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { initializeFirestoreCollections, checkCollections } from './services/database/initializeCollections';
-import { useAuth } from './contexts/AuthContext';
 import { AuthForm } from './components/Auth/AuthForm';
 import { AdminDashboard } from './components/Admin/AdminDashboard';
 import { AccountSettingsContainer } from './components/UserProfile/AccountSettings/AccountSettingsContainer';
@@ -16,14 +15,16 @@ import { PlanSelector } from './components/Subscription/Plans/PlanSelector';
 import { AnalyticsDashboard } from './components/RealTime/Dashboard/AnalyticsDashboard';
 import { ChatInterface } from './components/RealTime/Chat/ChatInterface';
 import { RecentActivityPanel } from './components/Dashboard/RecentActivityPanel';
+import { useAuth } from './contexts/AuthContext';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
+  auth: any;
   requireAdmin?: boolean;
 }
 
-function PrivateRoute({ children, requireAdmin = false }: PrivateRouteProps) {
-  const { isAuthenticated, loading, user } = useAuth();
+function PrivateRoute({ children, auth, requireAdmin = false }: PrivateRouteProps) {
+  const { isAuthenticated, loading, user } = auth;
 
   if (loading) {
     return (
@@ -45,6 +46,7 @@ function PrivateRoute({ children, requireAdmin = false }: PrivateRouteProps) {
 }
 
 export default function App() {
+  const auth = useAuth();
   const [authMode, setAuthMode] = React.useState<'signin' | 'signup'>('signin');
 
   const handleToggleAuthMode = () => {
@@ -79,7 +81,7 @@ export default function App() {
       <Route
         path="/admin"
         element={
-          <PrivateRoute requireAdmin>
+          <PrivateRoute auth={auth} requireAdmin>
             <MainLayout>
               <AdminDashboard />
             </MainLayout>
@@ -91,7 +93,7 @@ export default function App() {
       <Route
         path="/user"
         element={
-          <PrivateRoute>
+          <PrivateRoute auth={auth}>
             <MainLayout>
               <UserDashboard />
             </MainLayout>
@@ -101,7 +103,7 @@ export default function App() {
       <Route
         path="/analytics"
         element={
-          <PrivateRoute>
+          <PrivateRoute auth={auth}>
             <MainLayout>
               <AnalyticsDashboard />
             </MainLayout>
@@ -111,7 +113,7 @@ export default function App() {
       <Route
         path="/chat"
         element={
-          <PrivateRoute>
+          <PrivateRoute auth={auth}>
             <MainLayout>
               <ChatInterface onMenuToggle={function (): void {
                 throw new Error('Function not implemented.');
@@ -123,7 +125,7 @@ export default function App() {
       <Route
         path="/agent"
         element={
-          <PrivateRoute>
+          <PrivateRoute auth={auth}>
             <MainLayout>
               <AgentList />
             </MainLayout>
@@ -133,7 +135,7 @@ export default function App() {
       <Route
         path="/agent/:agentId"
         element={
-          <PrivateRoute>
+          <PrivateRoute auth={auth}>
             <MainLayout>
               <AgentDetail />
             </MainLayout>
@@ -143,7 +145,7 @@ export default function App() {
       <Route
         path="/settings"
         element={
-          <PrivateRoute>
+          <PrivateRoute auth={auth}>
             <MainLayout>
               <AccountSettingsContainer />
             </MainLayout>

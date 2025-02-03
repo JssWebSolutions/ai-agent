@@ -9,8 +9,15 @@ interface UsageStatsProps {
 }
 
 export function UsageStats({ usage, plan }: UsageStatsProps) {
-  const messagePercentage = (usage.metrics.totalMessages / plan.limits.messagesPerMonth) * 100;
-  const agentPercentage = (usage.metrics.totalAgents / plan.limits.agentsPerAccount) * 100;
+  if (!plan?.limits) {
+    return null;
+  }
+
+  const messageLimit = plan?.limits?.messagesPerMonth || 100;
+  const agentLimit = plan?.limits?.agentsPerAccount || 1;
+
+  const messagePercentage = (usage.metrics.totalMessages / messageLimit) * 100;
+  const agentPercentage = agentLimit === Infinity ? 0 : (usage.metrics.totalAgents / agentLimit) * 100;
 
   return (
     <div className="bg-white rounded-lg shadow p-6">

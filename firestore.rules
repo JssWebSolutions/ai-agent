@@ -24,60 +24,38 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Agents collection
-    match /agents/{agentId} {
+    // Transactions collection
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+
+    // Subscriptions collection
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+
+    // Settings collection
+    match /settings/{document=**} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid || isAdmin()
-      );
-      allow delete: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid || isAdmin()
-      );
+      allow write: if isAdmin();
     }
 
     // Usage collection
     match /usage/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow create, update: if isAuthenticated() && (
-        isOwner(userId) || isAdmin()
-      );
-      allow delete: if isAdmin();
+      allow write: if isAuthenticated() && (isOwner(userId) || isAdmin());
     }
 
-    // Template usage
-    match /usage/template {
+    // User counts collection
+    match /userCounts/{document=**} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
-    }
-
-    // User counts
-    match /userCounts/total {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // Settings collection (general)
-    match /settings/{document=**} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && isAdmin();
-    }
-
-    // Specific settings for API keys and payment settings
-    match /settings/api-keys {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    match /settings/payment-settings {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // API Settings collection
-    match /apiSettings/{provider} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && isAdmin();
     }
   }
 }
